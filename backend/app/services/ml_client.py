@@ -15,7 +15,9 @@ class MLServiceClient:
         self.max_retries: int = settings.ml_service_max_retries
         self.retry_delay: float = settings.ml_service_retry_delay
 
-    async def rate_script(self, text: str, script_id: str | None = None) -> dict[str, Any]:
+    async def rate_script(
+        self, text: str, script_id: str | None = None
+    ) -> dict[str, Any]:
         last_error = None
 
         for attempt in range(self.max_retries):

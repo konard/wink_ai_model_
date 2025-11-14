@@ -19,40 +19,40 @@ help:
 	@echo "  make format-backend  - Format backend code"
 
 dev-up:
-	docker compose -f infra/docker/compose.dev.yml up -d
+	docker compose --env-file .env -f infra/docker/compose.dev.yml up -d
 
 dev-rebuild:
-	docker compose -f infra/docker/compose.dev.yml down
-	docker compose -f infra/docker/compose.dev.yml build --no-cache
-	docker compose -f infra/docker/compose.dev.yml up -d
+	docker compose --env-file .env -f infra/docker/compose.dev.yml down
+	docker compose --env-file .env -f infra/docker/compose.dev.yml build --no-cache
+	docker compose --env-file .env -f infra/docker/compose.dev.yml up -d
 
 dev-down:
-	docker compose -f infra/docker/compose.dev.yml down
+	docker compose --env-file .env -f infra/docker/compose.dev.yml down
 
 dev-logs:
-	docker compose -f infra/docker/compose.dev.yml logs -f
+	docker compose --env-file .env -f infra/docker/compose.dev.yml logs -f
 
 dev-ml:
-	docker compose -f infra/docker/compose.dev.yml up -d postgres redis ml-service
+	docker compose --env-file .env -f infra/docker/compose.dev.yml up -d postgres redis ml-service
 	@echo "ML service available at http://localhost:8001/docs"
 
 dev-backend:
-	docker compose -f infra/docker/compose.dev.yml up -d postgres redis ml-service backend worker
+	docker compose --env-file .env -f infra/docker/compose.dev.yml up -d postgres redis ml-service backend worker
 	@echo "Backend available at http://localhost:8000/docs"
 
 dev-frontend:
-	docker compose -f infra/docker/compose.dev.yml up -d postgres redis ml-service backend worker frontend
+	docker compose --env-file .env -f infra/docker/compose.dev.yml up -d postgres redis ml-service backend worker frontend
 	@echo "Frontend available at http://localhost:5173"
 
 prod-up:
-	docker compose -f infra/docker/compose.prod.yml up -d
+	docker compose --env-file .env -f infra/docker/compose.prod.yml up -d
 
 prod-down:
-	docker compose -f infra/docker/compose.prod.yml down
+	docker compose --env-file .env -f infra/docker/compose.prod.yml down
 
 clean:
-	docker compose -f infra/docker/compose.dev.yml down -v
-	docker compose -f infra/docker/compose.prod.yml down -v
+	docker compose --env-file .env -f infra/docker/compose.dev.yml down -v
+	docker compose --env-file .env -f infra/docker/compose.prod.yml down -v
 
 test-ml:
 	cd ml_service && pytest

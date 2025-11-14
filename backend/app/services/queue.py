@@ -29,7 +29,12 @@ async def get_job_status(job_id: str) -> dict[str, Any]:
         job_info = await pool.job_info(job_id)
 
         if job_info is None:
-            return {"job_id": job_id, "status": "not_found", "result": None, "error": None}
+            return {
+                "job_id": job_id,
+                "status": "not_found",
+                "result": None,
+                "error": None,
+            }
 
         status_mapping = {
             JobStatus.deferred: "deferred",
@@ -44,8 +49,20 @@ async def get_job_status(job_id: str) -> dict[str, Any]:
         return {
             "job_id": job_id,
             "status": status,
-            "result": job_info.result if job_info.status == JobStatus.complete else None,
-            "error": str(job_info.result) if job_info.status not in [JobStatus.complete, JobStatus.queued, JobStatus.in_progress, JobStatus.deferred] else None,
+            "result": (
+                job_info.result if job_info.status == JobStatus.complete else None
+            ),
+            "error": (
+                str(job_info.result)
+                if job_info.status
+                not in [
+                    JobStatus.complete,
+                    JobStatus.queued,
+                    JobStatus.in_progress,
+                    JobStatus.deferred,
+                ]
+                else None
+            ),
         }
     except Exception as e:
         logger.error(f"Error fetching job {job_id}: {e}")
