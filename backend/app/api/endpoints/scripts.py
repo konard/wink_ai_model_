@@ -82,7 +82,7 @@ async def rate_script(
         raise ScriptNotFoundError(script_id)
 
     if background:
-        job_id = enqueue_rating_job(script_id)
+        job_id = await enqueue_rating_job(script_id)
         return RatingJobResponse(
             job_id=job_id,
             script_id=script_id,
@@ -101,5 +101,5 @@ async def rate_script(
 
 @router.get("/jobs/{job_id}/status")
 async def get_rating_job_status(job_id: str):
-    status = get_job_status(job_id)
+    status = await get_job_status(job_id)
     return status

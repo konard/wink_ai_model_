@@ -1,32 +1,54 @@
-import redis
-from rq import Queue
+from typing import Any
+
+from arq import create_pool
+from arq.connections import ArqRedis
+from arq.jobs import JobStatus
 from loguru import logger
 
 from ..core.config import settings
 
-redis_conn = redis.from_url(settings.redis_url)
-rating_queue = Queue("rating", connection=redis_conn)
+
+async def get_arq_pool() -> ArqRedis:
+    redis_settings = settings.get_arq_settings()
+    return await create_pool(redis_settings)
 
 
-def enqueue_rating_job(script_id: int) -> str:
-    from .tasks import process_script_rating
-
-    job = rating_queue.enqueue(process_script_rating, script_id, job_timeout="10m")
-    logger.info(f"Enqueued rating job {job.id} for script {script_id}")
-    return job.id
-
-
-def get_job_status(job_id: str) -> dict:
-    from rq.job import Job
-
+async def enqueue_rating_job(script_id: int) -> str:
+    pool = await get_arq_pool()
     try:
-        job = Job.fetch(job_id, connection=redis_conn)
+        job = await pool.enqueue_job("process_script_rating", script_id)
+        logger.info(f"Enqueued rating job {job.job_id} for script {script_id}")
+        return job.job_id
+    finally:
+        await pool.close()
+
+
+async def get_job_status(job_id: str) -> dict[str, Any]:
+    pool = await get_arq_pool()
+    try:
+        job_info = await pool.job_info(job_id)
+
+        if job_info is None:
+            return {"job_id": job_id, "status": "not_found", "result": None, "error": None}
+
+        status_mapping = {
+            JobStatus.deferred: "deferred",
+            JobStatus.queued: "queued",
+            JobStatus.in_progress: "in_progress",
+            JobStatus.complete: "completed",
+            JobStatus.not_found: "not_found",
+        }
+
+        status = status_mapping.get(job_info.status, "unknown")
+
         return {
             "job_id": job_id,
-            "status": job.get_status(),
-            "result": job.result if job.is_finished else None,
-            "error": str(job.exc_info) if job.is_failed else None,
+            "status": status,
+            "result": job_info.result if job_info.status == JobStatus.complete else None,
+            "error": str(job_info.result) if job_info.status not in [JobStatus.complete, JobStatus.queued, JobStatus.in_progress, JobStatus.deferred] else None,
         }
     except Exception as e:
         logger.error(f"Error fetching job {job_id}: {e}")
-        return {"job_id": job_id, "status": "unknown", "error": str(e)}
+        return {"job_id": job_id, "status": "error", "error": str(e), "result": None}
+    finally:
+        await pool.close()
