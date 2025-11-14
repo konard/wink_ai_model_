@@ -1,14 +1,14 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
-import sys
 
 from .schemas import ScriptRequest, ScriptRatingResponse, HealthResponse
 from .pipeline import get_pipeline
 from .config import settings
+from .metrics import get_metrics, track_inference_time
+from .structured_logger import setup_structured_logging
 
-logger.remove()
-logger.add(sys.stderr, level=settings.log_level)
+setup_structured_logging(json_logs=settings.json_logs)
 
 app = FastAPI(
     title="Movie Script Rating Service",
@@ -40,6 +40,7 @@ async def health():
 
 
 @app.post("/rate_script", response_model=ScriptRatingResponse)
+@track_inference_time("rate_script")
 async def rate_script(request: ScriptRequest):
     try:
         pipeline = get_pipeline()
@@ -50,6 +51,14 @@ async def rate_script(request: ScriptRequest):
         raise HTTPException(status_code=500, detail=f"Processing error: {str(e)}")
 
 
+@app.get("/metrics")
+async def metrics():
+    """Prometheus metrics endpoint"""
+    if not settings.enable_metrics:
+        raise HTTPException(status_code=404, detail="Metrics disabled")
+    return Response(content=get_metrics(), media_type="text/plain")
+
+
 @app.get("/")
 async def root():
     return {
@@ -58,6 +67,7 @@ async def root():
         "endpoints": {
             "health": "/health",
             "rate_script": "/rate_script",
+            "metrics": "/metrics",
             "docs": "/docs",
         },
     }

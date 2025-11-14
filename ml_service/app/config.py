@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     max_scenes: int = 1000
 
     log_level: str = "INFO"
+    json_logs: bool = False
+    enable_metrics: bool = True
 
     class Config:
         env_file = ".env"

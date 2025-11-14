@@ -5,6 +5,8 @@ from sentence_transformers import SentenceTransformer
 from loguru import logger
 
 from .config import settings
+from .metrics import MetricsTracker
+from .structured_logger import log_feature_scores
 
 
 VIOLENCE_WORDS = [
@@ -260,11 +262,23 @@ class RatingPipeline:
 
     def analyze_script(self, text: str, script_id: str | None = None) -> Dict[str, Any]:
         logger.info(f"Analyzing script (id={script_id})")
+        tracker = MetricsTracker() if settings.enable_metrics else None
 
+        if tracker:
+            tracker.start_timer("parsing")
         scenes = self.parse_script_to_scenes(text)
+        if tracker:
+            tracker.record_scene_parsing(tracker.end_timer("parsing"))
+            tracker.record_scenes_count(len(scenes))
         logger.info(f"Parsed {len(scenes)} scenes")
 
+        if tracker:
+            tracker.start_timer("feature_extraction")
         features = [self.scene_feature_vector(s["text"]) for s in scenes]
+        if tracker:
+            avg_time = tracker.end_timer("feature_extraction") / max(len(scenes), 1)
+            tracker.record_feature_extraction(avg_time)
+
         scores = [self.normalize_scene_scores(f) for f in features]
 
         agg = {
@@ -272,6 +286,22 @@ class RatingPipeline:
             for k in scores[0].keys()
         }
         rating_info = self.map_scores_to_rating(agg)
+
+        if tracker:
+            tracker.record_scores(agg)
+            tracker.record_rating(rating_info["rating"])
+
+        if settings.json_logs:
+            log_feature_scores(
+                script_id=script_id,
+                violence=agg["violence"],
+                sex_act=agg["sex_act"],
+                gore=agg["gore"],
+                profanity=agg["profanity"],
+                drugs=agg["drugs"],
+                nudity=agg["nudity"],
+                predicted_rating=rating_info["rating"],
+            )
 
         ranking = []
         for s, sc in zip(scenes, scores):
