@@ -9,6 +9,8 @@ async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit
 
 Base = declarative_base()
 
+from ..models import script  # noqa: E402, F401
+
 
 async def get_db() -> AsyncSession:
     async with async_session() as session:
