@@ -28,7 +28,9 @@ async def create_script(script: ScriptCreate, db: AsyncSession = Depends(get_db)
 
 @router.post("/upload", response_model=ScriptResponse, status_code=201)
 async def upload_script(
-    file: UploadFile = File(...), title: str = Form(None), db: AsyncSession = Depends(get_db)
+    file: UploadFile = File(...),
+    title: str = Form(None),
+    db: AsyncSession = Depends(get_db),
 ):
     if not file.filename:
         raise InvalidFileError("Filename is required")
