@@ -103,6 +103,21 @@ ml_rating_distribution = Counter(
     registry=registry,
 )
 
+rating_inference_duration_seconds = Histogram(
+    "rating_inference_duration_seconds",
+    "Time spent on rating inference",
+    ["endpoint"],
+    registry=registry,
+    buckets=(0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0),
+)
+
+rating_errors_total = Counter(
+    "rating_errors_total",
+    "Total number of rating errors",
+    ["error_type"],
+    registry=registry,
+)
+
 
 class MetricsTracker:
     """Helper for tracking metrics during inference"""
@@ -153,12 +168,15 @@ def track_inference_time(endpoint: str):
                 result = await func(*args, **kwargs)
                 duration = time.time() - start_time
                 ml_inference_latency_seconds.labels(endpoint=endpoint).observe(duration)
+                rating_inference_duration_seconds.labels(endpoint=endpoint).observe(duration)
                 ml_requests_total.labels(endpoint=endpoint, status="success").inc()
                 return result
             except Exception as e:
                 duration = time.time() - start_time
                 ml_inference_latency_seconds.labels(endpoint=endpoint).observe(duration)
+                rating_inference_duration_seconds.labels(endpoint=endpoint).observe(duration)
                 ml_inference_errors_total.labels(error_type=type(e).__name__).inc()
+                rating_errors_total.labels(error_type=type(e).__name__).inc()
                 ml_requests_total.labels(endpoint=endpoint, status="error").inc()
                 raise
             finally:
@@ -172,12 +190,15 @@ def track_inference_time(endpoint: str):
                 result = func(*args, **kwargs)
                 duration = time.time() - start_time
                 ml_inference_latency_seconds.labels(endpoint=endpoint).observe(duration)
+                rating_inference_duration_seconds.labels(endpoint=endpoint).observe(duration)
                 ml_requests_total.labels(endpoint=endpoint, status="success").inc()
                 return result
             except Exception as e:
                 duration = time.time() - start_time
                 ml_inference_latency_seconds.labels(endpoint=endpoint).observe(duration)
+                rating_inference_duration_seconds.labels(endpoint=endpoint).observe(duration)
                 ml_inference_errors_total.labels(error_type=type(e).__name__).inc()
+                rating_errors_total.labels(error_type=type(e).__name__).inc()
                 ml_requests_total.labels(endpoint=endpoint, status="error").inc()
                 raise
             finally:

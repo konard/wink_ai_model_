@@ -56,7 +56,7 @@ PSYCH_VIOLENCE = [
     "mental hospital",
 ]
 
-PROFANITY = [r"\bfuck\b", r"\bshit\b", r"\bmotherfucker\b", r"\bbitch\b"]
+PROFANITY = [r"\bfuck\w*\b", r"\bshit\b", r"\bmotherfucker\b", r"\bbitch\b", r"\bdamn\b", r"\bhell\b"]
 
 DRUG_WORDS = [
     r"\bdrug(s)?\b",
@@ -142,12 +142,16 @@ class RatingPipeline:
 
     @staticmethod
     def parse_script_to_scenes(txt: str) -> List[Dict[str, Any]]:
+        txt = txt.strip()
+        if not txt:
+            return []
+
         scenes = []
         parts = re.split(
             r"(?=(?:INT\.|EXT\.|scene_heading\s*:|SCENE HEADING\s*:))", txt, flags=re.I
         )
 
-        if len(parts) < 5:
+        if len(parts) < 2 or not any(re.match(r"(?:INT\.|EXT\.)", p, flags=re.I) for p in parts):
             return [{"scene_id": 0, "heading": "full_text", "text": txt}]
 
         idx = 0
@@ -162,7 +166,7 @@ class RatingPipeline:
             scenes.append({"scene_id": idx, "heading": heading, "text": text})
             idx += 1
 
-        return scenes
+        return scenes if scenes else []
 
     def scene_feature_vector(self, scene_text: str) -> Dict[str, float]:
         txt = scene_text.lower()
@@ -233,6 +237,25 @@ class RatingPipeline:
             "profanity": min(1.0, f["profanity"] / 5.0),
             "drugs": min(1.0, f["drugs"] / 5.0),
             "child_risk": min(1.0, f["child_mentions"] / 3.0),
+        }
+
+    @staticmethod
+    def aggregate_scene_scores(scenes: List[Dict[str, Any]]) -> Dict[str, float]:
+        if not scenes:
+            return {
+                "violence": 0.0,
+                "gore": 0.0,
+                "sex_act": 0.0,
+                "nudity": 0.0,
+                "profanity": 0.0,
+                "drugs": 0.0,
+                "child_risk": 0.0,
+            }
+
+        scores = [s.get("scores", s) for s in scenes]
+        return {
+            k: float(np.percentile([s[k] for s in scores], 90))
+            for k in scores[0].keys()
         }
 
     @staticmethod
