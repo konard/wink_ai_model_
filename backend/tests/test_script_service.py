@@ -1,6 +1,8 @@
 import pytest
 from unittest.mock import AsyncMock, patch
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+from sqlalchemy import select
 from app.services.script_service import ScriptService
 from app.schemas.script import ScriptCreate
 from app.models.script import Script
@@ -82,10 +84,17 @@ async def test_process_rating_success(test_session: AsyncSession, sample_script)
 
         result = await ScriptService.process_rating(test_session, sample_script.id)
 
+        refreshed_result = await test_session.execute(
+            select(Script)
+            .options(selectinload(Script.scenes), selectinload(Script.ratings))
+            .where(Script.id == sample_script.id)
+        )
+        refreshed_script = refreshed_result.scalar_one()
+
         assert result["predicted_rating"] == "16+"
-        assert sample_script.predicted_rating == "16+"
-        assert len(sample_script.scenes) >= 1
-        assert len(sample_script.ratings) >= 1
+        assert refreshed_script.predicted_rating == "16+"
+        assert len(refreshed_script.scenes) >= 1
+        assert len(refreshed_script.ratings) >= 1
 
 
 @pytest.mark.asyncio

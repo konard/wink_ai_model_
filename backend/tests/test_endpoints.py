@@ -95,7 +95,7 @@ async def test_rate_script_sync(client: AsyncClient, sample_script):
 
 @pytest.mark.asyncio
 async def test_rate_script_background(client: AsyncClient, sample_script):
-    with patch("app.services.queue.enqueue_rating_job") as mock_enqueue:
+    with patch("app.api.endpoints.scripts.enqueue_rating_job") as mock_enqueue:
         mock_enqueue.return_value = "job-123"
 
         response = await client.post(
@@ -118,7 +118,7 @@ async def test_rate_script_not_found(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_get_job_status(client: AsyncClient):
-    with patch("app.services.queue.get_job_status") as mock_status:
+    with patch("app.api.endpoints.scripts.get_job_status") as mock_status:
         mock_status.return_value = {
             "job_id": "job-123",
             "status": "completed",
