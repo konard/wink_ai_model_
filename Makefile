@@ -1,10 +1,11 @@
-.PHONY: help dev-up dev-down dev-logs dev-ml dev-backend dev-frontend prod-up prod-down clean
+.PHONY: help dev-up dev-down dev-logs dev-rebuild dev-ml dev-backend dev-frontend prod-up prod-down clean
 
 help:
 	@echo "Movie Rating Service - Development Commands"
 	@echo ""
 	@echo "  make dev-up          - Start all dev services"
 	@echo "  make dev-down        - Stop all dev services"
+	@echo "  make dev-rebuild     - Rebuild and restart all dev services"
 	@echo "  make dev-logs        - Follow logs for all services"
 	@echo "  make dev-ml          - Start only ML service (for ML dev)"
 	@echo "  make dev-backend     - Start backend + deps (for backend dev)"
@@ -18,6 +19,11 @@ help:
 	@echo "  make format-backend  - Format backend code"
 
 dev-up:
+	docker compose -f infra/docker/compose.dev.yml up -d
+
+dev-rebuild:
+	docker compose -f infra/docker/compose.dev.yml down
+	docker compose -f infra/docker/compose.dev.yml build --no-cache
 	docker compose -f infra/docker/compose.dev.yml up -d
 
 dev-down:
