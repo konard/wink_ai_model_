@@ -1,4 +1,4 @@
-from typing import Any, cast
+from typing import Any
 
 from arq import create_pool
 from arq.connections import ArqRedis
@@ -18,7 +18,7 @@ async def enqueue_rating_job(script_id: int) -> str:
     try:
         job = await pool.enqueue_job("process_script_rating", script_id)
         logger.info(f"Enqueued rating job {job.job_id} for script {script_id}")
-        return cast(str, job.job_id)
+        return job.job_id  # type: ignore[no-any-return]
     finally:
         await pool.close()
 

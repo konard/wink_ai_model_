@@ -1,4 +1,4 @@
-from typing import Any, cast
+from typing import Any
 
 from loguru import logger
 from sqlalchemy import select
@@ -27,7 +27,7 @@ class ScriptService:
             .options(selectinload(Script.scenes))
             .where(Script.id == script_id)
         )
-        return cast(Script | None, result.scalar_one_or_none())
+        return result.scalar_one_or_none()  # type: ignore[no-any-return]
 
     @staticmethod
     async def list_scripts(
