@@ -1,5 +1,5 @@
 import re
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List, Tuple, cast
 from loguru import logger
 from sentence_transformers import SentenceTransformer, util
 import numpy as np
@@ -102,9 +102,8 @@ class WhatIfAnalyzer:
                         end_scene = (
                             int(match.group(2)) if match.group(2) else start_scene
                         )
-                        modifications["remove_scenes"].extend(
-                            range(start_scene, end_scene + 1)
-                        )
+                        scene_list = cast(List[int], modifications["remove_scenes"])
+                        scene_list.extend(range(start_scene, end_scene + 1))
                     elif pattern_type == "reduce_violence":
                         modifications["reduce_violence"] = True
                         if match.lastindex and match.lastindex >= 2:
@@ -120,13 +119,13 @@ class WhatIfAnalyzer:
                     elif pattern_type == "reduce_drugs":
                         modifications["reduce_drugs"] = True
 
-        if modifications["violence_replacement"]:
-            replacement_text = modifications["violence_replacement"]
+        replacement = modifications["violence_replacement"]
+        if replacement and isinstance(replacement, str):
             verbal_sim = self._get_max_similarity(
-                replacement_text, self.context_examples["replace_violence_verbal"]
+                replacement, self.context_examples["replace_violence_verbal"]
             )
             mild_sim = self._get_max_similarity(
-                replacement_text, self.context_examples["replace_violence_mild"]
+                replacement, self.context_examples["replace_violence_mild"]
             )
 
             if verbal_sim > 0.5:
@@ -393,7 +392,7 @@ class WhatIfAnalyzer:
             else:
                 agg[k] = float(np.percentile(values, 90))
 
-        all_excerpts = {
+        all_excerpts: Dict[str, List[Any]] = {
             "violence": [],
             "gore": [],
             "sex": [],
@@ -405,7 +404,8 @@ class WhatIfAnalyzer:
             for key in all_excerpts.keys():
                 all_excerpts[key].extend(s["excerpts"][key])
 
-        agg["excerpts"] = {k: v[:5] for k, v in all_excerpts.items()}
+        limited_excerpts = {k: v[:5] for k, v in all_excerpts.items()}
+        agg["excerpts"] = cast(Any, limited_excerpts)
 
         rating_info = map_scores_to_rating(agg)
 

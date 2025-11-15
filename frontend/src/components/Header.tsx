@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
-import { Moon, Sun, Globe } from 'lucide-react'
+import { Moon, Sun } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
-import { useLanguage, Language } from '../contexts/LanguageContext'
+import { useLanguage } from '../contexts/LanguageContext'
 
 export default function Header() {
   const { theme, toggleTheme } = useTheme()
