@@ -1,5 +1,5 @@
 import re
-from typing import Dict, List, Any, DefaultDict, Set, TypedDict
+from typing import Dict, List, Any, DefaultDict, Set, TypedDict, cast
 from collections import defaultdict
 from loguru import logger
 
@@ -69,7 +69,9 @@ class EntityExtractor:
                 }
                 for name, data in entity_dict.items()
             ]
-            result[entity_type].sort(key=lambda x: x["mentions"], reverse=True)
+            result[entity_type].sort(
+                key=lambda x: cast(int, x["mentions"]), reverse=True
+            )
 
         return result
 
@@ -112,7 +114,9 @@ class EntityExtractor:
                 for name, data in entity_dict.items()
                 if data["mentions"] >= 2
             ]
-            result[entity_type].sort(key=lambda x: x["mentions"], reverse=True)
+            result[entity_type].sort(
+                key=lambda x: cast(int, x["mentions"]), reverse=True
+            )
 
         return result
 

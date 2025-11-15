@@ -1,4 +1,4 @@
-from typing import List, Dict, Tuple, cast, Literal
+from typing import List, Dict, Tuple, Literal
 import numpy as np
 import re
 
@@ -77,9 +77,7 @@ class RatingAdvisor:
         self.pipeline = RatingPipeline()
 
     def analyze(self, request: RatingAdvisorRequest) -> RatingAdvisorResponse:
-        result = self.pipeline.rate_script(
-            script_text=request.script_text, script_id=None
-        )
+        result = self.pipeline.analyze_script(text=request.script_text, script_id=None)
 
         current_rating = request.current_rating or result["predicted_rating"]
         target_rating = request.target_rating
@@ -320,7 +318,9 @@ class RatingAdvisor:
             max_issue = max(scene.issues.items(), key=lambda x: x[1])
             issue_dim, issue_val = max_issue
 
-            action_type: Literal["remove_scene", "reduce_content", "modify_dialogue", "rewrite_scene"]
+            action_type: Literal[
+                "remove_scene", "reduce_content", "modify_dialogue", "rewrite_scene"
+            ]
             difficulty: Literal["easy", "medium", "hard"]
 
             if issue_val > 0.6:

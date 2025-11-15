@@ -1,4 +1,5 @@
-from typing import List
+from typing import List, cast
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -36,7 +37,7 @@ async def create_version(
             total_scenes=int(version.total_scenes or 0),
             change_description=str(version.change_description),
             is_current=bool(version.is_current or False),
-            created_at=version.created_at,
+            created_at=cast(datetime, version.created_at),
         )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -59,7 +60,7 @@ async def get_versions(script_id: int, db: AsyncSession = Depends(get_db)):
                 total_scenes=int(v.total_scenes or 0),
                 change_description=str(v.change_description),
                 is_current=bool(v.is_current or False),
-                created_at=v.created_at,
+                created_at=cast(datetime, v.created_at),
             )
             for v in versions
         ]
@@ -86,7 +87,7 @@ async def get_version(
             total_scenes=int(version.total_scenes or 0),
             change_description=str(version.change_description),
             is_current=bool(version.is_current or False),
-            created_at=version.created_at,
+            created_at=cast(datetime, version.created_at),
             content=str(version.content),
             scenes_data=list(version.scenes_data) if version.scenes_data else [],
         )
