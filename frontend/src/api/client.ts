@@ -30,6 +30,8 @@ export interface Script {
   total_scenes: number | null
   created_at: string
   updated_at: string | null
+  reasons?: string[]
+  evidence_excerpts?: string[]
 }
 
 export interface Scene {
@@ -45,6 +47,7 @@ export interface Scene {
   child_risk: number
   weight: number
   sample_text: string | null
+  recommendations?: string[]
 }
 
 export interface ScriptDetail extends Script {
