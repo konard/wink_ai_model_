@@ -3,7 +3,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ...db.session import get_db
+from ...db.base import get_db
 from ...services.version_service import VersionService
 from ...schemas.version import (
     VersionCreate,
