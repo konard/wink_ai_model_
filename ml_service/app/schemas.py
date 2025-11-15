@@ -61,3 +61,51 @@ class WhatIfResponse(BaseModel):
     changes_applied: list[str]
     explanation: str
     rating_changed: bool
+
+
+class EntityTargetSchema(BaseModel):
+    entity_type: str = "all"
+    entity_names: list[str] | None = None
+
+
+class ModificationConfigSchema(BaseModel):
+    type: str = Field(..., description="Type of modification")
+    params: dict = Field(default_factory=dict)
+    targets: EntityTargetSchema | None = None
+    scope: list[int] | None = None
+
+
+class StructuredWhatIfRequest(BaseModel):
+    script_text: str = Field(..., min_length=10)
+    modifications: list[ModificationConfigSchema]
+    use_llm: bool = False
+    llm_provider: str | None = None
+    preserve_structure: bool = True
+
+
+class EntityInfoSchema(BaseModel):
+    type: str
+    name: str
+    mentions: int
+    scenes: list[int]
+
+
+class SceneInfoSchema(BaseModel):
+    scene_id: int
+    scene_type: str
+    characters: list[str]
+    location: str | None
+    summary: str | None
+
+
+class AdvancedWhatIfResponse(BaseModel):
+    original_rating: str
+    modified_rating: str
+    original_scores: dict[str, float]
+    modified_scores: dict[str, float]
+    modifications_applied: list[dict]
+    entities_extracted: list[EntityInfoSchema]
+    scene_analysis: list[SceneInfoSchema]
+    explanation: str
+    modified_script: str | None = None
+    rating_changed: bool

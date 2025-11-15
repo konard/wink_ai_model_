@@ -8,9 +8,13 @@ from .schemas import (
     HealthResponse,
     WhatIfRequest,
     WhatIfResponse,
+    StructuredWhatIfRequest,
+    AdvancedWhatIfResponse,
 )
 from .pipeline import get_pipeline
 from .what_if import get_what_if_analyzer
+from .what_if_advanced import get_advanced_analyzer
+from .what_if_advanced.schemas import StructuredWhatIfRequest as InternalStructuredRequest
 from .config import settings
 from .metrics import get_metrics, track_inference_time
 from .structured_logger import setup_structured_logging
@@ -80,6 +84,28 @@ async def what_if_simulation(request: WhatIfRequest):
         raise HTTPException(status_code=500, detail=f"Processing error: {str(e)}")
 
 
+@app.post("/what_if_advanced", response_model=AdvancedWhatIfResponse)
+@track_inference_time("what_if_advanced")
+async def what_if_advanced_simulation(request: StructuredWhatIfRequest):
+    try:
+        use_llm = request.use_llm
+        llm_provider = request.llm_provider
+
+        analyzer = get_advanced_analyzer(
+            use_llm=use_llm,
+            llm_provider=llm_provider,
+        )
+
+        internal_request = InternalStructuredRequest(**request.model_dump())
+
+        result = analyzer.analyze_structured(internal_request)
+
+        return AdvancedWhatIfResponse(**result.model_dump())
+    except Exception as e:
+        logger.error(f"Error processing advanced what-if request: {e}")
+        raise HTTPException(status_code=500, detail=f"Processing error: {str(e)}")
+
+
 @app.get("/")
 async def root():
     return {
@@ -89,6 +115,7 @@ async def root():
             "health": "/health",
             "rate_script": "/rate_script",
             "what_if": "/what_if",
+            "what_if_advanced": "/what_if_advanced",
             "metrics": "/metrics",
             "docs": "/docs",
         },
