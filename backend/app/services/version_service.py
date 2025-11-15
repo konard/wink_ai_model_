@@ -122,7 +122,9 @@ class VersionService:
         if not version:
             raise ValueError(f"Version {version_number} not found")
 
-        result: Result[tuple[Script]] = await db.execute(select(Script).where(Script.id == script_id))
+        result: Result[tuple[Script]] = await db.execute(
+            select(Script).where(Script.id == script_id)
+        )
         script: Optional[Script] = result.scalars().one_or_none()
         if not script:
             raise ValueError(f"Script {script_id} not found")
