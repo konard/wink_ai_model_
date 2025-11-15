@@ -25,7 +25,7 @@ class VersionService:
             .order_by(desc(ScriptVersion.version_number))
         )
         latest_version = result.scalar_one_or_none()
-        new_version_number = (
+        new_version_number: int = (
             (latest_version.version_number + 1) if latest_version else 1
         )
 

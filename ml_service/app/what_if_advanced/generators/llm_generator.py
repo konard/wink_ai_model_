@@ -119,7 +119,7 @@ REQUIREMENTS:
             temperature=0.7,
             max_tokens=2000,
         )
-        return response.choices[0].message.content.strip()
+        return str(response.choices[0].message.content).strip()
 
     def _generate_anthropic(self, prompt: str) -> str:
         """Generate using Anthropic API."""
@@ -129,7 +129,7 @@ REQUIREMENTS:
             temperature=0.7,
             messages=[{"role": "user", "content": prompt}],
         )
-        return response.content[0].text.strip()
+        return str(response.content[0].text).strip()
 
     def generate_alternative_action(
         self,

@@ -27,15 +27,15 @@ async def create_version(
         )
 
         return VersionResponse(
-            id=version.id,
-            script_id=version.script_id,
-            version_number=version.version_number,
-            title=version.title,
-            predicted_rating=version.predicted_rating,
-            agg_scores=version.agg_scores or {},
-            total_scenes=version.total_scenes or 0,
-            change_description=version.change_description,
-            is_current=version.is_current or False,
+            id=int(version.id),
+            script_id=int(version.script_id),
+            version_number=int(version.version_number),
+            title=str(version.title),
+            predicted_rating=str(version.predicted_rating),
+            agg_scores=dict(version.agg_scores or {}),
+            total_scenes=int(version.total_scenes or 0),
+            change_description=str(version.change_description),
+            is_current=bool(version.is_current or False),
             created_at=version.created_at,
         )
     except ValueError as e:
@@ -52,13 +52,13 @@ async def get_versions(script_id: int, db: AsyncSession = Depends(get_db)):
         versions = await VersionService.get_versions(db, script_id)
         return [
             VersionListResponse(
-                id=v.id,
-                version_number=v.version_number,
-                title=v.title,
-                predicted_rating=v.predicted_rating,
-                total_scenes=v.total_scenes or 0,
-                change_description=v.change_description,
-                is_current=v.is_current or False,
+                id=int(v.id),
+                version_number=int(v.version_number),
+                title=str(v.title),
+                predicted_rating=str(v.predicted_rating),
+                total_scenes=int(v.total_scenes or 0),
+                change_description=str(v.change_description),
+                is_current=bool(v.is_current or False),
                 created_at=v.created_at,
             )
             for v in versions
@@ -77,18 +77,18 @@ async def get_version(
             raise HTTPException(status_code=404, detail="Version not found")
 
         return VersionResponse(
-            id=version.id,
-            script_id=version.script_id,
-            version_number=version.version_number,
-            title=version.title,
-            predicted_rating=version.predicted_rating,
-            agg_scores=version.agg_scores or {},
-            total_scenes=version.total_scenes or 0,
-            change_description=version.change_description,
-            is_current=version.is_current or False,
+            id=int(version.id),
+            script_id=int(version.script_id),
+            version_number=int(version.version_number),
+            title=str(version.title),
+            predicted_rating=str(version.predicted_rating),
+            agg_scores=dict(version.agg_scores or {}),
+            total_scenes=int(version.total_scenes or 0),
+            change_description=str(version.change_description),
+            is_current=bool(version.is_current or False),
             created_at=version.created_at,
-            content=version.content,
-            scenes_data=version.scenes_data,
+            content=str(version.content),
+            scenes_data=list(version.scenes_data) if version.scenes_data else [],
         )
     except HTTPException:
         raise

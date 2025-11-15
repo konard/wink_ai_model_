@@ -81,6 +81,7 @@ def test_violence_reduction(analyzer):
             ModificationConfig(
                 type="reduce_violence",
                 params={"content_types": ["violence", "gore"]},
+                scope=None,
             )
         ],
     )
@@ -104,6 +105,7 @@ def test_profanity_reduction(analyzer):
             ModificationConfig(
                 type="reduce_profanity",
                 params={"content_types": ["profanity"]},
+                scope=None,
             )
         ],
     )
@@ -121,6 +123,7 @@ def test_scene_removal(analyzer):
             ModificationConfig(
                 type="remove_scenes",
                 params={"scene_ids": [0]},
+                scope=None,
             )
         ],
     )
@@ -142,6 +145,7 @@ def test_character_rename(analyzer):
                     "character_name": "JOHN",
                     "new_name": "JACK",
                 },
+                scope=None,
             )
         ],
     )
@@ -160,10 +164,12 @@ def test_multiple_modifications(analyzer):
             ModificationConfig(
                 type="reduce_violence",
                 params={"content_types": ["violence"]},
+                scope=None,
             ),
             ModificationConfig(
                 type="reduce_profanity",
                 params={"content_types": ["profanity"]},
+                scope=None,
             ),
         ],
     )
@@ -183,10 +189,12 @@ def test_rating_comparison(analyzer):
             ModificationConfig(
                 type="reduce_violence",
                 params={"content_types": ["violence", "gore"]},
+                scope=None,
             ),
             ModificationConfig(
                 type="reduce_profanity",
                 params={"content_types": ["profanity"]},
+                scope=None,
             ),
         ],
     )

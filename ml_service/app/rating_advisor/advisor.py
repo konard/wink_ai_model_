@@ -1,8 +1,8 @@
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, cast, Literal
 import numpy as np
 import re
 
-from ..pipeline import MovieRatingPipeline
+from ..pipeline import RatingPipeline
 from .schemas import (
     RatingAdvisorRequest,
     RatingAdvisorResponse,
@@ -74,7 +74,7 @@ class RatingAdvisor:
     }
 
     def __init__(self, use_llm: bool = False):
-        self.pipeline = MovieRatingPipeline()
+        self.pipeline = RatingPipeline()
 
     def analyze(self, request: RatingAdvisorRequest) -> RatingAdvisorResponse:
         result = self.pipeline.rate_script(
@@ -192,6 +192,7 @@ class RatingAdvisor:
             if gap <= 0:
                 continue
 
+            priority: Literal["critical", "high", "medium", "low"]
             if gap > 0.5:
                 priority = "critical"
             elif gap > 0.3:
@@ -235,6 +236,7 @@ class RatingAdvisor:
             if not issues:
                 continue
 
+            severity: Literal["critical", "high", "medium", "low"]
             if severity_score > 1.5:
                 severity = "critical"
             elif severity_score > 0.8:
@@ -317,6 +319,9 @@ class RatingAdvisor:
         for scene in critical_scenes[:10]:
             max_issue = max(scene.issues.items(), key=lambda x: x[1])
             issue_dim, issue_val = max_issue
+
+            action_type: Literal["remove_scene", "reduce_content", "modify_dialogue", "rewrite_scene"]
+            difficulty: Literal["easy", "medium", "hard"]
 
             if issue_val > 0.6:
                 action_type = "remove_scene"
@@ -401,7 +406,9 @@ class RatingAdvisor:
                 f"Priority changes shown in recommendations."
             )
 
-    def _estimate_effort(self, scenes: List[SceneIssue], gaps: List[RatingGap]) -> str:
+    def _estimate_effort(
+        self, scenes: List[SceneIssue], gaps: List[RatingGap]
+    ) -> Literal["minimal", "moderate", "significant", "extensive"]:
         critical_count = sum(1 for s in scenes if s.severity == "critical")
         high_count = sum(1 for s in scenes if s.severity == "high")
         critical_gaps = sum(1 for g in gaps if g.priority in ["critical", "high"])

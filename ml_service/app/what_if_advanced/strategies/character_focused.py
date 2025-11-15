@@ -95,7 +95,7 @@ class CharacterFocusedStrategy(ModificationStrategy):
     def _remove_character_lines(self, text: str, character_name: str) -> str:
         """Remove dialogue and action lines for a character."""
         lines = text.split("\n")
-        filtered_lines = []
+        filtered_lines: list[str] = []
         skip_next = False
 
         for i, line in enumerate(lines):

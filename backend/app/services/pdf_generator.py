@@ -119,7 +119,7 @@ class PDFReportGenerator:
         story.extend(self._create_rating_section(script))
         story.append(Spacer(1, 20))
 
-        scores_chart = self._create_scores_chart(script.agg_scores or {})
+        scores_chart = self._create_scores_chart(dict(script.agg_scores or {}))
         if scores_chart:
             story.append(scores_chart)
             story.append(Spacer(1, 20))
@@ -181,7 +181,7 @@ class PDFReportGenerator:
 
         elements.append(Paragraph("Возрастной рейтинг", self.styles["SectionHeader"]))
 
-        rating = script.predicted_rating or "—"
+        rating = str(script.predicted_rating or "—")
         rating_color = self.RATING_COLORS.get(rating, colors.grey)
 
         rating_table = Table(

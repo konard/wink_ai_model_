@@ -64,6 +64,7 @@ class LLMRatingAdvisor:
                 return self._call_openai(prompt, temperature=0.7)
             elif self.anthropic_client:
                 return self._call_anthropic(prompt, temperature=0.7)
+            return None
         except Exception:
             return None
 
@@ -177,7 +178,7 @@ Rewritten scene:"""
             temperature=temperature,
             max_tokens=2000,
         )
-        return response.choices[0].message.content
+        return str(response.choices[0].message.content)
 
     def _call_anthropic(self, prompt: str, temperature: float = 0.3) -> str:
         response = self.anthropic_client.messages.create(
@@ -186,7 +187,7 @@ Rewritten scene:"""
             temperature=temperature,
             messages=[{"role": "user", "content": prompt}],
         )
-        return response.content[0].text
+        return str(response.content[0].text)
 
     def _parse_llm_response(self, response: str) -> List[Dict]:
         try:
