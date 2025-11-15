@@ -62,7 +62,7 @@ class VersionService:
             change_description=change_description,
             is_current=make_current,
             scenes_data=scenes_data,
-            metadata={
+            version_metadata={
                 "model_version": script.model_version,
                 "created_from": "manual_save",
             },
@@ -122,7 +122,9 @@ class VersionService:
         if not version:
             raise ValueError(f"Version {version_number} not found")
 
-        result: Result[tuple[Script]] = await db.execute(select(Script).where(Script.id == script_id))
+        result: Result[tuple[Script]] = await db.execute(
+            select(Script).where(Script.id == script_id)
+        )
         script: Optional[Script] = result.scalars().one_or_none()
         if not script:
             raise ValueError(f"Script {script_id} not found")

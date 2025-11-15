@@ -95,6 +95,6 @@ class ScriptVersion(Base):  # type: ignore[misc, valid-type]
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     scenes_data = Column(JSON, nullable=True)
-    metadata = Column(JSON, nullable=True)
+    version_metadata = Column(JSON, nullable=True)
 
     script = relationship("Script", back_populates="versions")
