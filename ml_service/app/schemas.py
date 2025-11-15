@@ -109,3 +109,53 @@ class AdvancedWhatIfResponse(BaseModel):
     explanation: str
     modified_script: str | None = None
     rating_changed: bool
+
+
+class RatingAdvisorRequest(BaseModel):
+    script_text: str = Field(..., min_length=10)
+    current_rating: str | None = None
+    target_rating: str = Field(..., pattern="^(0\\+|6\\+|12\\+|16\\+|18\\+)$")
+    language: str = "en"
+    include_rewrites: bool = False
+
+
+class RecommendationActionSchema(BaseModel):
+    action_type: str
+    scene_id: int
+    description: str
+    impact_score: float
+    category: str
+    specific_changes: list[str]
+    difficulty: str
+
+
+class SceneIssueSchema(BaseModel):
+    scene_id: int
+    scene_number: int
+    content_preview: str
+    issues: dict[str, float]
+    severity: str
+    recommendations: list[str]
+
+
+class RatingGapSchema(BaseModel):
+    dimension: str
+    current_score: float
+    target_score: float
+    gap: float
+    priority: str
+
+
+class RatingAdvisorResponse(BaseModel):
+    current_rating: str
+    target_rating: str
+    is_achievable: bool
+    confidence: float
+    current_scores: dict[str, float]
+    target_scores: dict[str, float]
+    rating_gaps: list[RatingGapSchema]
+    problematic_scenes: list[SceneIssueSchema]
+    recommended_actions: list[RecommendationActionSchema]
+    summary: str
+    estimated_effort: str
+    alternative_targets: list[str] | None = None

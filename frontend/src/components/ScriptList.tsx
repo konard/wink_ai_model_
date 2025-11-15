@@ -1,11 +1,14 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { scriptsApi } from '../api/client'
-import { Film, Clock, Loader2 } from 'lucide-react'
+import { Film, Clock, Loader2, Sparkles } from 'lucide-react'
 import { useLanguage } from '../contexts/LanguageContext'
+import DemoScripts from './DemoScripts'
 
 export default function ScriptList() {
   const { language, t } = useLanguage()
+  const [showDemoScripts, setShowDemoScripts] = useState(false)
   const { data: scripts, isLoading, error } = useQuery({
     queryKey: ['scripts'],
     queryFn: scriptsApi.list,
@@ -37,6 +40,15 @@ export default function ScriptList() {
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             {t('script.list_subtitle')}
           </p>
+        </div>
+        <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+          <button
+            onClick={() => setShowDemoScripts(true)}
+            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg hover:from-purple-700 hover:to-pink-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 transition-all"
+          >
+            <Sparkles className="h-4 w-4" />
+            {language === 'ru' ? 'Демо Сценарии' : 'Demo Scripts'}
+          </button>
         </div>
       </div>
 
@@ -82,6 +94,10 @@ export default function ScriptList() {
           </Link>
         ))}
       </div>
+
+      {showDemoScripts && (
+        <DemoScripts onClose={() => setShowDemoScripts(false)} />
+      )}
     </div>
   )
 }

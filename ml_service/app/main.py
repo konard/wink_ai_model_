@@ -10,11 +10,15 @@ from .schemas import (
     WhatIfResponse,
     StructuredWhatIfRequest,
     AdvancedWhatIfResponse,
+    RatingAdvisorRequest,
+    RatingAdvisorResponse,
 )
 from .pipeline import get_pipeline
 from .what_if import get_what_if_analyzer
 from .what_if_advanced import get_advanced_analyzer
 from .what_if_advanced.schemas import StructuredWhatIfRequest as InternalStructuredRequest
+from .rating_advisor import RatingAdvisor
+from .rating_advisor.schemas import RatingAdvisorRequest as InternalAdvisorRequest
 from .config import settings
 from .metrics import get_metrics, track_inference_time
 from .structured_logger import setup_structured_logging
@@ -106,6 +110,19 @@ async def what_if_advanced_simulation(request: StructuredWhatIfRequest):
         raise HTTPException(status_code=500, detail=f"Processing error: {str(e)}")
 
 
+@app.post("/rating_advisor", response_model=RatingAdvisorResponse)
+@track_inference_time("rating_advisor")
+async def rating_advisor(request: RatingAdvisorRequest):
+    try:
+        advisor = RatingAdvisor(use_llm=True)
+        internal_request = InternalAdvisorRequest(**request.model_dump())
+        result = advisor.analyze(internal_request)
+        return RatingAdvisorResponse(**result.model_dump())
+    except Exception as e:
+        logger.error(f"Error processing rating advisor request: {e}")
+        raise HTTPException(status_code=500, detail=f"Processing error: {str(e)}")
+
+
 @app.get("/")
 async def root():
     return {
@@ -116,6 +133,7 @@ async def root():
             "rate_script": "/rate_script",
             "what_if": "/what_if",
             "what_if_advanced": "/what_if_advanced",
+            "rating_advisor": "/rating_advisor",
             "metrics": "/metrics",
             "docs": "/docs",
         },
