@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Form
+from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...db.base import get_db
@@ -13,6 +14,8 @@ from ...schemas.script import (
 from ...services.script_service import script_service
 from ...services.ml_client import ml_client
 from ...services.queue import enqueue_rating_job, get_job_status
+from ...services.pdf_generator import PDFReportGenerator
+from ...services.export_service import ExportService
 from ...core.exceptions import (
     ScriptNotFoundError,
     InvalidFileError,
@@ -124,3 +127,64 @@ async def what_if_analysis(
     )
 
     return WhatIfResponse(**result)
+
+
+@router.get("/{script_id}/export/pdf")
+async def export_pdf(script_id: int, db: AsyncSession = Depends(get_db)):
+    script = await script_service.get_script(db, script_id)
+    if not script:
+        raise ScriptNotFoundError(script_id)
+
+    generator = PDFReportGenerator(language="ru")
+    pdf_buffer = generator.generate_report(
+        script=script,
+        scenes=script.scenes or []
+    )
+
+    return StreamingResponse(
+        pdf_buffer,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment; filename=rating_report_{script_id}.pdf"
+        }
+    )
+
+
+@router.get("/{script_id}/export/excel")
+async def export_excel(script_id: int, db: AsyncSession = Depends(get_db)):
+    script = await script_service.get_script(db, script_id)
+    if not script:
+        raise ScriptNotFoundError(script_id)
+
+    excel_buffer = ExportService.export_to_excel(
+        script=script,
+        scenes=script.scenes or []
+    )
+
+    return StreamingResponse(
+        excel_buffer,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": f"attachment; filename=rating_report_{script_id}.xlsx"
+        }
+    )
+
+
+@router.get("/{script_id}/export/csv")
+async def export_csv(script_id: int, db: AsyncSession = Depends(get_db)):
+    script = await script_service.get_script(db, script_id)
+    if not script:
+        raise ScriptNotFoundError(script_id)
+
+    csv_output = ExportService.export_to_csv(
+        script=script,
+        scenes=script.scenes or []
+    )
+
+    return StreamingResponse(
+        csv_output,
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": f"attachment; filename=rating_report_{script_id}.csv"
+        }
+    )

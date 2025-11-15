@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, Float, DateTime, JSON, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, Float, DateTime, JSON, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from ..db.base import Base
@@ -14,6 +14,7 @@ class Script(Base):  # type: ignore[misc, valid-type]
     agg_scores = Column(JSON, nullable=True)
     model_version = Column(String(50), nullable=True)
     total_scenes = Column(Integer, nullable=True)
+    current_version = Column(Integer, default=1)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
@@ -22,6 +23,9 @@ class Script(Base):  # type: ignore[misc, valid-type]
     )
     ratings = relationship(
         "RatingLog", back_populates="script", cascade="all, delete-orphan"
+    )
+    versions = relationship(
+        "ScriptVersion", back_populates="script", cascade="all, delete-orphan"
     )
 
 
@@ -61,3 +65,26 @@ class RatingLog(Base):  # type: ignore[misc, valid-type]
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     script = relationship("Script", back_populates="ratings")
+
+
+class ScriptVersion(Base):  # type: ignore[misc, valid-type]
+    __tablename__ = "script_versions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    script_id = Column(
+        Integer, ForeignKey("scripts.id", ondelete="CASCADE"), nullable=False
+    )
+    version_number = Column(Integer, nullable=False)
+    title = Column(String(255), nullable=False)
+    content = Column(Text, nullable=False)
+    predicted_rating = Column(String(10), nullable=True)
+    agg_scores = Column(JSON, nullable=True)
+    total_scenes = Column(Integer, nullable=True)
+    change_description = Column(Text, nullable=True)
+    is_current = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    scenes_data = Column(JSON, nullable=True)
+    metadata = Column(JSON, nullable=True)
+
+    script = relationship("Script", back_populates="versions")
