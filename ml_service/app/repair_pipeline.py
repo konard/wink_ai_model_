@@ -15,15 +15,18 @@ from tqdm import tqdm
 # pdf parsing
 try:
     import PyPDF2
+
     PDF_SUPPORT = True
 except ImportError:
     PDF_SUPPORT = False
-    print("WARNING: PyPDF2 not installed. PDF support disabled. Install with: pip install PyPDF2")
+    print(
+        "WARNING: PyPDF2 not installed. PDF support disabled. Install with: pip install PyPDF2"
+    )
 
 # ===== REFERENCE CONTEXTS FOR SEMANTIC ANALYSIS =====
 # контекстные шаблоны для определения типа сцен (английские и русские)
 CONTEXT_TEMPLATES = {
-    'graphic_violence': [
+    "graphic_violence": [
         "brutal murder with blood and gore",
         "torture and physical violence causing injury",
         "graphic depiction of death and killing",
@@ -32,9 +35,9 @@ CONTEXT_TEMPLATES = {
         "жестокое убийство с кровью и увечьями",
         "пытки и физическое насилие причиняющее травмы",
         "графическое изображение смерти и убийства",
-        "насильственное нападение с оружием причиняющее вред"
+        "насильственное нападение с оружием причиняющее вред",
     ],
-    'stylized_action': [
+    "stylized_action": [
         "heroic action scene with combat",
         "adventure movie fight sequence",
         "comic book style action without gore",
@@ -45,9 +48,9 @@ CONTEXT_TEMPLATES = {
         "приключенческая сцена драки в фильме",
         "экшн в стиле комиксов без жестокости",
         "погоня и бой в шпионском триллере",
-        "супергерой спасающий людей от опасности"
+        "супергерой спасающий людей от опасности",
     ],
-    'sexual_content': [
+    "sexual_content": [
         "explicit sexual intercourse scene",
         "nudity in sexual context",
         "rape or sexual assault",
@@ -56,18 +59,18 @@ CONTEXT_TEMPLATES = {
         "явная сцена полового акта",
         "нагота в сексуальном контексте",
         "изнасилование или сексуальное насилие",
-        "графическая сексуальная активность"
+        "графическая сексуальная активность",
     ],
-    'mild_romance': [
+    "mild_romance": [
         "romantic kissing and affection",
         "love scene without explicit content",
         "romantic relationship development",
         # Russian
         "романтические поцелуи и нежность",
         "любовная сцена без эксплицитного контента",
-        "развитие романтических отношений"
+        "развитие романтических отношений",
     ],
-    'horror_violence': [
+    "horror_violence": [
         "horror movie with scary violence",
         "psychological terror and fear",
         "monster attack with blood",
@@ -76,36 +79,36 @@ CONTEXT_TEMPLATES = {
         "фильм ужасов с пугающим насилием",
         "психологический террор и страх",
         "нападение монстра с кровью",
-        "слэшер с убийствами"
+        "слэшер с убийствами",
     ],
-    'profanity_context': [
+    "profanity_context": [
         "casual conversation with swearing",
         "aggressive confrontation with profanity",
         "repeated use of strong language",
         # Russian
         "непринужденный разговор с матом",
         "агрессивная конфронтация с нецензурной лексикой",
-        "многократное использование крепких выражений"
+        "многократное использование крепких выражений",
     ],
-    'drug_abuse': [
+    "drug_abuse": [
         "drug use and addiction",
         "substance abuse scene",
         "characters taking illegal drugs",
         # Russian
         "употребление наркотиков и зависимость",
         "сцена злоупотребления веществами",
-        "персонажи принимающие запрещенные наркотики"
+        "персонажи принимающие запрещенные наркотики",
     ],
-    'child_endangerment': [
+    "child_endangerment": [
         "child in dangerous situation",
         "violence involving minors",
         "child abuse or threat to children",
         # Russian
         "ребенок в опасной ситуации",
         "насилие с участием несовершеннолетних",
-        "жестокое обращение с детьми или угроза детям"
+        "жестокое обращение с детьми или угроза детям",
     ],
-    'discussion_violence': [
+    "discussion_violence": [
         "courtroom discussion of crime",
         "testimony about violent event",
         "describing past violence in dialogue",
@@ -116,9 +119,9 @@ CONTEXT_TEMPLATES = {
         "показания о насильственном событии",
         "описание прошлого насилия в диалоге",
         "академическое или правовое обсуждение оружия",
-        "демонстрация или объяснение без действия"
+        "демонстрация или объяснение без действия",
     ],
-    'thriller_tension': [
+    "thriller_tension": [
         "psychological thriller with suspense",
         "tense dramatic confrontation",
         "mystery investigation without violence",
@@ -127,101 +130,236 @@ CONTEXT_TEMPLATES = {
         "психологический триллер с напряжением",
         "напряженная драматическая конфронтация",
         "расследование тайны без насилия",
-        "судебная драма правовые споры"
-    ]
+        "судебная драма правовые споры",
+    ],
 }
 
 # ===== KEYWORD PATTERNS (English and Russian) =====
 VIOLENCE_WORDS = [
     # English patterns
-    r'\bkill\w*', r'\bshoot\w*', r'\bshot\b', r'\bstab\w*',
-    r'\bknife\b', r'\bgun\w*', r'\bpistol\b', r'\brifle\b',
-    r'\bexplod\w*', r'\bblast\w*', r'\battack\w*',
-    r'\bbeating\b', r'\bbeaten\b', r'\bbeats\b',  # Exclude "a beat" (screenplay term)
-    r'\bcorpse\b', r'\bdead\b', r'\bmurder\w*', r'\bviolence\b',
-    r'\bterrorist\b', r'\bhostage\b', r'\brip(ped|s)? apart\b',
-    r'\bthug(s)?\b', r'\bterror\b', r'\bfight(ing)?\b',
-    r'\bbattle(s|d)?\b', r'\bwar\b', r'\bshoot[- ]?out\b',
-    r'\bexplosion\b', r'\bgrenade\b',
+    r"\bkill\w*",
+    r"\bshoot\w*",
+    r"\bshot\b",
+    r"\bstab\w*",
+    r"\bknife\b",
+    r"\bgun\w*",
+    r"\bpistol\b",
+    r"\brifle\b",
+    r"\bexplod\w*",
+    r"\bblast\w*",
+    r"\battack\w*",
+    r"\bbeating\b",
+    r"\bbeaten\b",
+    r"\bbeats\b",  # Exclude "a beat" (screenplay term)
+    r"\bcorpse\b",
+    r"\bdead\b",
+    r"\bmurder\w*",
+    r"\bviolence\b",
+    r"\bterrorist\b",
+    r"\bhostage\b",
+    r"\brip(ped|s)? apart\b",
+    r"\bthug(s)?\b",
+    r"\bterror\b",
+    r"\bfight(ing)?\b",
+    r"\bbattle(s|d)?\b",
+    r"\bwar\b",
+    r"\bshoot[- ]?out\b",
+    r"\bexplosion\b",
+    r"\bgrenade\b",
     # Russian patterns
-    r'\bубий\w*', r'\bубить\b', r'\bубил\w*', r'\bубива\w*',
-    r'\bстреля\w*', r'\bвыстрел\w*', r'\bзастрел\w*',
-    r'\bзарез\w*', r'\bнож\b', r'\bоруж\w+', r'\bпистолет\w*',
-    r'\bвинтовк\w*', r'\bавтомат\w*', r'\bвзрыв\w*',
-    r'\bатак\w*', r'\bнападе\w*', r'\bизбие\w*',
-    r'\bтруп\w*', r'\bмертв\w*', r'\bпогиб\w*',
-    r'\bнасилие\b', r'\bжесток\w*', r'\bтеррор\w*',
-    r'\bзаложник\w*', r'\bбандит\w*', r'\bдрак\w*',
-    r'\bбой\b', r'\bсраж\w*', r'\bвойна\b', r'\bбоев\w*',
-    r'\bгранат\w*', r'\bбомб\w*'
+    r"\bубий\w*",
+    r"\bубить\b",
+    r"\bубил\w*",
+    r"\bубива\w*",
+    r"\bстреля\w*",
+    r"\bвыстрел\w*",
+    r"\bзастрел\w*",
+    r"\bзарез\w*",
+    r"\bнож\b",
+    r"\bоруж\w+",
+    r"\bпистолет\w*",
+    r"\bвинтовк\w*",
+    r"\bавтомат\w*",
+    r"\bвзрыв\w*",
+    r"\bатак\w*",
+    r"\bнападе\w*",
+    r"\bизбие\w*",
+    r"\bтруп\w*",
+    r"\bмертв\w*",
+    r"\bпогиб\w*",
+    r"\bнасилие\b",
+    r"\bжесток\w*",
+    r"\bтеррор\w*",
+    r"\bзаложник\w*",
+    r"\bбандит\w*",
+    r"\bдрак\w*",
+    r"\bбой\b",
+    r"\bсраж\w*",
+    r"\bвойна\b",
+    r"\bбоев\w*",
+    r"\bгранат\w*",
+    r"\bбомб\w*",
 ]
 
 GORE_WORDS = [
     # English patterns
-    r'\bblood\b', r'\bbloody\b', r'\bbloodied\b', r'\bbleeding\b',
-    r'\bcorpse\b', r'\bwound\b', r'\bscar\b', r'\binjur\w*',
-    r'\bcrash\w*', r'\bburn\w*', r'\bguts\b', r'\bentrails\b',
-    r'\bbrain\b', r'\bdead body\b', r'\bgore\b', r'\bmutilat\w*',
+    r"\bblood\b",
+    r"\bbloody\b",
+    r"\bbloodied\b",
+    r"\bbleeding\b",
+    r"\bcorpse\b",
+    r"\bwound\b",
+    r"\bscar\b",
+    r"\binjur\w*",
+    r"\bcrash\w*",
+    r"\bburn\w*",
+    r"\bguts\b",
+    r"\bentrails\b",
+    r"\bbrain\b",
+    r"\bdead body\b",
+    r"\bgore\b",
+    r"\bmutilat\w*",
     # Russian patterns
-    r'\bкров\w*', r'\bкровав\w*', r'\bкровоточ\w*',
-    r'\bран\w+', r'\bшрам\w*', r'\bувечь\w*',
-    r'\bожог\w*', r'\bкишк\w*', r'\bвнутренност\w*',
-    r'\bмозг\w*', r'\bрасчленен\w*', r'\bизувеч\w*'
+    r"\bкров\w*",
+    r"\bкровав\w*",
+    r"\bкровоточ\w*",
+    r"\bран\w+",
+    r"\bшрам\w*",
+    r"\bувечь\w*",
+    r"\bожог\w*",
+    r"\bкишк\w*",
+    r"\bвнутренност\w*",
+    r"\bмозг\w*",
+    r"\bрасчленен\w*",
+    r"\bизувеч\w*",
 ]
 
 PROFANITY = [
     # English patterns
-    r'\bfuck\b', r'\bshit\b', r'\bmotherfucker\b', r'\bbitch\b',
-    r'\basshole\b', r'\bdamn\b', r'\bhell\b', r'\bcrap\b',
+    r"\bfuck\b",
+    r"\bshit\b",
+    r"\bmotherfucker\b",
+    r"\bbitch\b",
+    r"\basshole\b",
+    r"\bdamn\b",
+    r"\bhell\b",
+    r"\bcrap\b",
     # Russian patterns
-    r'\bблядь\b', r'\bбля\b', r'\bсука\b', r'\bхуй\b',
-    r'\bпизд\w*', r'\bебать\b', r'\bебал\w*', r'\bебан\w*',
-    r'\bзаеб\w*', r'\bдерьм\w*', r'\bговн\w*', r'\bхер\w*',
-    r'\bмудак\w*', r'\bсволоч\w*', r'\bтварь\b'
+    r"\bблядь\b",
+    r"\bбля\b",
+    r"\bсука\b",
+    r"\bхуй\b",
+    r"\bпизд\w*",
+    r"\bебать\b",
+    r"\bебал\w*",
+    r"\bебан\w*",
+    r"\bзаеб\w*",
+    r"\bдерьм\w*",
+    r"\bговн\w*",
+    r"\bхер\w*",
+    r"\bмудак\w*",
+    r"\bсволоч\w*",
+    r"\bтварь\b",
 ]
 
 DRUG_WORDS = [
     # English patterns
-    r'\bdrug(s)?\b', r'\bheroin\b', r'\bcocaine\b', r'\bmarijuana\b',
-    r'\bpill(s)?\b', r'\bweed\b', r'\balcohol\b', r'\bdrunk\b',
-    r'\bcigarette\b', r'\bsmok(e|ing)\b', r'\baddiction\b',
+    r"\bdrug(s)?\b",
+    r"\bheroin\b",
+    r"\bcocaine\b",
+    r"\bmarijuana\b",
+    r"\bpill(s)?\b",
+    r"\bweed\b",
+    r"\balcohol\b",
+    r"\bdrunk\b",
+    r"\bcigarette\b",
+    r"\bsmok(e|ing)\b",
+    r"\baddiction\b",
     # Russian patterns
-    r'\bнаркот\w*', r'\bгероин\w*', r'\bкокаин\w*', r'\bмарихуан\w*',
-    r'\bтравк\w*', r'\bдоп\w*', r'\bтаблетк\w*', r'\bпилюл\w*',
-    r'\bалкогол\w*', r'\bспирт\w*', r'\bвыпив\w*', r'\bпьян\w*',
-    r'\bсигарет\w*', r'\bкур\w*', r'\bзависим\w*', r'\bнакур\w*'
+    r"\bнаркот\w*",
+    r"\bгероин\w*",
+    r"\bкокаин\w*",
+    r"\bмарихуан\w*",
+    r"\bтравк\w*",
+    r"\bдоп\w*",
+    r"\bтаблетк\w*",
+    r"\bпилюл\w*",
+    r"\bалкогол\w*",
+    r"\bспирт\w*",
+    r"\bвыпив\w*",
+    r"\bпьян\w*",
+    r"\bсигарет\w*",
+    r"\bкур\w*",
+    r"\bзависим\w*",
+    r"\bнакур\w*",
 ]
 
 CHILD_WORDS = [
     # English patterns
-    r'\bchild(ren)?\b', r'\bkid(s)?\b', r'\bson\b', r'\bdaughter\b',
-    r'\bteen(aged)?\b', r'\bboy\b', r'\bgirl\b', r'\bminor\b',
+    r"\bchild(ren)?\b",
+    r"\bkid(s)?\b",
+    r"\bson\b",
+    r"\bdaughter\b",
+    r"\bteen(aged)?\b",
+    r"\bboy\b",
+    r"\bgirl\b",
+    r"\bminor\b",
     # Russian patterns
-    r'\bребенок\b', r'\bребенк\w*', r'\bдет\w+', r'\bмалыш\w*',
-    r'\bсын\b', r'\bдоч\w*', r'\bподросток\w*', r'\bмальчик\w*',
-    r'\bдевочк\w*', r'\bнесовершеннолетн\w*'
+    r"\bребенок\b",
+    r"\bребенк\w*",
+    r"\bдет\w+",
+    r"\bмалыш\w*",
+    r"\bсын\b",
+    r"\bдоч\w*",
+    r"\bподросток\w*",
+    r"\bмальчик\w*",
+    r"\bдевочк\w*",
+    r"\bнесовершеннолетн\w*",
 ]
 
 NUDITY_WORDS = [
     # English patterns
-    r'\bbra\b', r'\bpanty|panties\b', r'\bunderwear\b', r'\bnaked\b',
-    r'\bnude\b', r'\bundress\w*', r'\btopless\b',
+    r"\bbra\b",
+    r"\bpanty|panties\b",
+    r"\bunderwear\b",
+    r"\bnaked\b",
+    r"\bnude\b",
+    r"\bundress\w*",
+    r"\btopless\b",
     # Russian patterns
-    r'\bголый\b', r'\bголая\b', r'\bнаг\w*', r'\bобнаж\w*',
-    r'\bбюстгальтер\w*', r'\bтрус\w*', r'\bбелье\b',
-    r'\bраздева\w*', r'\bбез одежд\w*'
+    r"\bголый\b",
+    r"\bголая\b",
+    r"\bнаг\w*",
+    r"\bобнаж\w*",
+    r"\bбюстгальтер\w*",
+    r"\bтрус\w*",
+    r"\bбелье\b",
+    r"\bраздева\w*",
+    r"\bбез одежд\w*",
 ]
 
 SEX_WORDS = [
     # English patterns
-    r'\brape\b', r'\bsexual\b', r'\bintercourse\b', r'\bsex scene\b',
-    r'\bmolest\b', r'\borgasm\b', r'\bmake love\b', r'\bhaving sex\b',
-    r'\bsexually\b', r'\bbed\s+scene\b',
+    r"\brape\b",
+    r"\bsexual\b",
+    r"\bintercourse\b",
+    r"\bsex scene\b",
+    r"\bmolest\b",
+    r"\borgasm\b",
+    r"\bmake love\b",
+    r"\bhaving sex\b",
+    r"\bsexually\b",
+    r"\bbed\s+scene\b",
     # Russian patterns
-    r'\bизнасилов\w*', r'\bнасилов\w*', r'\bсексуальн\w*',
-    r'\bполов\w+\s+акт\w*', r'\bинтимн\w*', r'\bоргазм\w*',
-    r'\bзанимаются\s+сексом\b', r'\bзанимались\s+любовью\b',
-    r'\bпостельн\w+\s+сцен\w*'
+    r"\bизнасилов\w*",
+    r"\bнасилов\w*",
+    r"\bсексуальн\w*",
+    r"\bполов\w+\s+акт\w*",
+    r"\bинтимн\w*",
+    r"\bоргазм\w*",
+    r"\bзанимаются\s+сексом\b",
+    r"\bзанимались\s+любовью\b",
+    r"\bпостельн\w+\s+сцен\w*",
 ]
 
 # ===== INITIALIZATION =====
@@ -234,9 +372,7 @@ print("Предвычисление контекстных эмбеддинго�
 context_embeddings = {}
 for context_type, templates in CONTEXT_TEMPLATES.items():
     context_embeddings[context_type] = embedder.encode(
-        templates,
-        convert_to_numpy=True,
-        show_progress_bar=False
+        templates, convert_to_numpy=True, show_progress_bar=False
     )
 print("Модель готова к использованию.\n")
 
@@ -252,56 +388,56 @@ def count_pattern_matches(patterns: List[str], text: str) -> Tuple[int, List[str
     # фразы-исключения, которые не считаются за реальное насилие/контент
     FALSE_POSITIVES = [
         # English patterns
-        r'if (it|that|this) kills',
-        r'(it|that|this)\'ll kill',
-        r'(it|that|this) (will|would) kill',
-        r'gonna.*kill',  # "gonna get the brass ring if it kills him"
-        r'kill (you|me|him|her|them|us)',  # Figurative "kills you/me"
-        r'make love',  # Неэксплицитное выражение
-        r'kill time',
-        r'dressed to kill',
-        r'killer instinct',
-        r'lady killer',
-        r'killing me softly',
-        r'shoot the breeze',
-        r'shoot for',
-        r'shot in the dark',
-        r'long shot',
-        r'shot at',  # Попытка/шанс (like "got a shot at")
-        r'light[ -]?shot',
-        r'fight (for|to see|to|for the)',  # Метафора борьбы
-        r'fighting (for|against)',  # "fighting for bread crumbs"
-        r'won the war',  # Метафора победы
-        r'war (ration|time|era|years)',  # Historical context
-        r'(world|civil|cold) war',
-        r'battles? (with|against|for)',  # Метафорическая борьба
-        r'attack(ed|ing)? (the|a) problem',
-        r'speed of light',  # Физическое описание
-        r'explosion of',  # "explosion of wood" (not literal explosion)
-        r'explod(e|ed|ing) (with|into)',  # Figurative
-        r'fight back tears',
-        r'fight for (justice|freedom|rights)',
-        r'fighting? (cancer|disease|illness)',
-        r'dead serious',  # Figurative
-        r'pool table',  # "shot" in pool context
-        r'bank shot',  # Pool/basketball
-        r'\ba beat\b',  # Screenplay term for pause
-        r'as if.*\b(molest|rape|seduce|fondle)',  # Hypothetical/comparative (not actual content)
-        r'about to.*\b(molest|rape|seduce|fondle)',  # Prevented/hypothetical action
-        r'were to.*\b(molest|rape|seduce)',  # Conditional/hypothetical
-        r'would.*\b(molest|rape|seduce)',  # Hypothetical
-        r'brain (garbage|dump|drain|power|wave|dead|cell|teaser)',  # Metaphorical/non-gore brain usage
-        r'brain(s)? (are|is) (just|garbage|trash)',  # "brains are just garbage"
+        r"if (it|that|this) kills",
+        r"(it|that|this)\'ll kill",
+        r"(it|that|this) (will|would) kill",
+        r"gonna.*kill",  # "gonna get the brass ring if it kills him"
+        r"kill (you|me|him|her|them|us)",  # Figurative "kills you/me"
+        r"make love",  # Неэксплицитное выражение
+        r"kill time",
+        r"dressed to kill",
+        r"killer instinct",
+        r"lady killer",
+        r"killing me softly",
+        r"shoot the breeze",
+        r"shoot for",
+        r"shot in the dark",
+        r"long shot",
+        r"shot at",  # Попытка/шанс (like "got a shot at")
+        r"light[ -]?shot",
+        r"fight (for|to see|to|for the)",  # Метафора борьбы
+        r"fighting (for|against)",  # "fighting for bread crumbs"
+        r"won the war",  # Метафора победы
+        r"war (ration|time|era|years)",  # Historical context
+        r"(world|civil|cold) war",
+        r"battles? (with|against|for)",  # Метафорическая борьба
+        r"attack(ed|ing)? (the|a) problem",
+        r"speed of light",  # Физическое описание
+        r"explosion of",  # "explosion of wood" (not literal explosion)
+        r"explod(e|ed|ing) (with|into)",  # Figurative
+        r"fight back tears",
+        r"fight for (justice|freedom|rights)",
+        r"fighting? (cancer|disease|illness)",
+        r"dead serious",  # Figurative
+        r"pool table",  # "shot" in pool context
+        r"bank shot",  # Pool/basketball
+        r"\ba beat\b",  # Screenplay term for pause
+        r"as if.*\b(molest|rape|seduce|fondle)",  # Hypothetical/comparative (not actual content)
+        r"about to.*\b(molest|rape|seduce|fondle)",  # Prevented/hypothetical action
+        r"were to.*\b(molest|rape|seduce)",  # Conditional/hypothetical
+        r"would.*\b(molest|rape|seduce)",  # Hypothetical
+        r"brain (garbage|dump|drain|power|wave|dead|cell|teaser)",  # Metaphorical/non-gore brain usage
+        r"brain(s)? (are|is) (just|garbage|trash)",  # "brains are just garbage"
         # Russian patterns
-        r'в курсе',  # "в курсе" = "aware of/know about" (not drugs)
-        r'курток',  # "куртка" = "jacket" (not smoking)
-        r'куртк\w',  # "куртка" variations
-        r'обритый наголо',  # "обритый наголо" = "shaved bald" (not nudity)
-        r'наголо',  # "наголо" = "bald/clean-shaven" (when not about nudity)
-        r'таблетк\w+\s+(от|для|против)',  # "таблетки от/для" = medicine pills (not drugs)
-        r'болеутол\w+',  # "болеутоляющее" = painkiller (medicine, not drugs)
-        r'кроват\w*',  # "кровать/кровати" = "bed" (not blood/gore)
-        r'кров[ао]\w*',  # "крова/кровом" = "shelter/roof" (not blood)
+        r"в курсе",  # "в курсе" = "aware of/know about" (not drugs)
+        r"курток",  # "куртка" = "jacket" (not smoking)
+        r"куртк\w",  # "куртка" variations
+        r"обритый наголо",  # "обритый наголо" = "shaved bald" (not nudity)
+        r"наголо",  # "наголо" = "bald/clean-shaven" (when not about nudity)
+        r"таблетк\w+\s+(от|для|против)",  # "таблетки от/для" = medicine pills (not drugs)
+        r"болеутол\w+",  # "болеутоляющее" = painkiller (medicine, not drugs)
+        r"кроват\w*",  # "кровать/кровати" = "bed" (not blood/gore)
+        r"кров[ао]\w*",  # "крова/кровом" = "shelter/roof" (not blood)
     ]
 
     false_positive_patterns = [re.compile(p, re.I) for p in FALSE_POSITIVES]
@@ -318,7 +454,9 @@ def count_pattern_matches(patterns: List[str], text: str) -> Tuple[int, List[str
             excerpt = text[start:end].strip()
 
             # проверяем, не является ли это ложным срабатыванием
-            is_false_positive = any(fp.search(excerpt) for fp in false_positive_patterns)
+            is_false_positive = any(
+                fp.search(excerpt) for fp in false_positive_patterns
+            )
 
             if not is_false_positive:
                 matches.append(excerpt)
@@ -337,9 +475,7 @@ def analyze_scene_context(scene_text: str) -> Dict[str, float]:
     """
     # получаем эмбеддинг сцены
     scene_embedding = embedder.encode(
-        [scene_text],
-        convert_to_numpy=True,
-        show_progress_bar=False
+        [scene_text], convert_to_numpy=True, show_progress_bar=False
     )[0]
 
     # вычисляем сходство с каждым типом контекста
@@ -375,22 +511,22 @@ def extract_scene_features(scene_text: str) -> Dict[str, Any]:
     length = max(1, len(txt.split()))
 
     return {
-        'violence_count': violence_count,
-        'violence_excerpts': violence_excerpts,
-        'gore_count': gore_count,
-        'gore_excerpts': gore_excerpts,
-        'profanity_count': profanity_count,
-        'profanity_excerpts': profanity_excerpts,
-        'drugs_count': drugs_count,
-        'drugs_excerpts': drugs_excerpts,
-        'child_count': child_count,
-        'child_excerpts': child_excerpts,
-        'nudity_count': nudity_count,
-        'nudity_excerpts': nudity_excerpts,
-        'sex_count': sex_count,
-        'sex_excerpts': sex_excerpts,
-        'length': length,
-        'context_scores': context_scores
+        "violence_count": violence_count,
+        "violence_excerpts": violence_excerpts,
+        "gore_count": gore_count,
+        "gore_excerpts": gore_excerpts,
+        "profanity_count": profanity_count,
+        "profanity_excerpts": profanity_excerpts,
+        "drugs_count": drugs_count,
+        "drugs_excerpts": drugs_excerpts,
+        "child_count": child_count,
+        "child_excerpts": child_excerpts,
+        "nudity_count": nudity_count,
+        "nudity_excerpts": nudity_excerpts,
+        "sex_count": sex_count,
+        "sex_excerpts": sex_excerpts,
+        "length": length,
+        "context_scores": context_scores,
     }
 
 
@@ -399,14 +535,14 @@ def normalize_and_contextualize_scores(features: Dict[str, Any]) -> Dict[str, An
     нормализует признаки и применяет контекстную коррекцию.
     использует семантический анализ для корректировки оценок.
     """
-    L = features['length']
-    ctx = features['context_scores']
+    L = features["length"]
+    ctx = features["context_scores"]
 
     # базовая нормализация по длине сцены
     # используем более разумную формулу: (count / length) * scale_factor
     # это дает плавную оценку вместо скачков от 0 к 1
-    violence_density = features['violence_count'] / max(1, L)
-    gore_density = features['gore_count'] / max(1, L)
+    violence_density = features["violence_count"] / max(1, L)
+    gore_density = features["gore_count"] / max(1, L)
 
     # масштабируем: 1 упоминание на 50 слов = 0.2, на 25 слов = 0.4, на 10 слов = 1.0
     violence_raw = violence_density * 100
@@ -418,22 +554,22 @@ def normalize_and_contextualize_scores(features: Dict[str, Any]) -> Dict[str, An
     gore_multiplier = 1.0
 
     # если это обсуждение/демонстрация насилия, а не реальное действие
-    if ctx['discussion_violence'] > 0.55 or ctx['thriller_tension'] > 0.5:
+    if ctx["discussion_violence"] > 0.55 or ctx["thriller_tension"] > 0.5:
         violence_multiplier *= 0.3  # Сильно снижаем
         gore_multiplier *= 0.3
 
     # если сцена больше похожа на стилизованный экшн, снижаем оценку насилия
-    elif ctx['stylized_action'] > 0.5:
+    elif ctx["stylized_action"] > 0.5:
         violence_multiplier *= 0.6
         gore_multiplier *= 0.7
 
     # если сцена похожа на графическое насилие, увеличиваем оценку
-    if ctx['graphic_violence'] > 0.6:
+    if ctx["graphic_violence"] > 0.6:
         violence_multiplier *= 1.3
         gore_multiplier *= 1.4
 
     # если сцена похожа на хоррор, корректируем оценки
-    if ctx['horror_violence'] > 0.55:
+    if ctx["horror_violence"] > 0.55:
         violence_multiplier *= 1.2
         gore_multiplier *= 1.3
 
@@ -441,55 +577,57 @@ def normalize_and_contextualize_scores(features: Dict[str, Any]) -> Dict[str, An
     gore_score = min(1.0, gore_raw * gore_multiplier)
 
     # сексуальный контент - если есть явные признаки
-    sex_raw = features['sex_count']
-    if ctx['sexual_content'] > 0.6 and sex_raw > 0:
+    sex_raw = features["sex_count"]
+    if ctx["sexual_content"] > 0.6 and sex_raw > 0:
         sex_score = min(1.0, sex_raw * 1.5)
-    elif ctx['mild_romance'] > 0.5:
+    elif ctx["mild_romance"] > 0.5:
         sex_score = min(0.3, sex_raw * 0.5)  # мягкая романтика
     else:
         sex_score = min(1.0, sex_raw)
 
     # нагота
-    nudity_score = min(1.0, features['nudity_count'] / 3.0)
+    nudity_score = min(1.0, features["nudity_count"] / 3.0)
 
     # Ненормативная лексика
-    profanity_score = min(1.0, features['profanity_count'] / (L / 100))
+    profanity_score = min(1.0, features["profanity_count"] / (L / 100))
 
     # Наркотики
-    if ctx['drug_abuse'] > 0.55:
-        drugs_score = min(1.0, features['drugs_count'] / 2.0)
+    if ctx["drug_abuse"] > 0.55:
+        drugs_score = min(1.0, features["drugs_count"] / 2.0)
     else:
-        drugs_score = min(1.0, features['drugs_count'] / 5.0)
+        drugs_score = min(1.0, features["drugs_count"] / 5.0)
 
     # Риск для детей
     child_risk = 0.0
-    if features['child_count'] > 0:
-        if ctx['child_endangerment'] > 0.5:
-            child_risk = min(1.0, features['child_count'] / 2.0)
+    if features["child_count"] > 0:
+        if ctx["child_endangerment"] > 0.5:
+            child_risk = min(1.0, features["child_count"] / 2.0)
         else:
-            child_risk = min(0.5, features['child_count'] / 5.0)
+            child_risk = min(0.5, features["child_count"] / 5.0)
 
     return {
-        'violence': violence_score,
-        'gore': gore_score,
-        'sex_act': sex_score,
-        'nudity': nudity_score,
-        'profanity': profanity_score,
-        'drugs': drugs_score,
-        'child_risk': child_risk,
-        'context_scores': ctx,
-        'excerpts': {
-            'violence': features['violence_excerpts'],
-            'gore': features['gore_excerpts'],
-            'sex': features['sex_excerpts'],
-            'nudity': features['nudity_excerpts'],  # Добавлены примеры наготы
-            'profanity': features['profanity_excerpts'],
-            'drugs': features['drugs_excerpts']
-        }
+        "violence": violence_score,
+        "gore": gore_score,
+        "sex_act": sex_score,
+        "nudity": nudity_score,
+        "profanity": profanity_score,
+        "drugs": drugs_score,
+        "child_risk": child_risk,
+        "context_scores": ctx,
+        "excerpts": {
+            "violence": features["violence_excerpts"],
+            "gore": features["gore_excerpts"],
+            "sex": features["sex_excerpts"],
+            "nudity": features["nudity_excerpts"],  # Добавлены примеры наготы
+            "profanity": features["profanity_excerpts"],
+            "drugs": features["drugs_excerpts"],
+        },
     }
 
 
-def generate_scene_recommendations(scene_scores: Dict[str, float], target_rating: str = None) -> List[str]:
+def generate_scene_recommendations(
+    scene_scores: Dict[str, float], target_rating: str = None
+) -> List[str]:
     """
     Генерирует рекомендации по снижению возрастного рейтинга для конкретной сцены.
 
@@ -503,69 +641,69 @@ def generate_scene_recommendations(scene_scores: Dict[str, float], target_rating
     recommendations = []
 
     # Насилие
-    if scene_scores['violence'] >= 0.7:
+    if scene_scores["violence"] >= 0.7:
         recommendations.append(
             "🔪 Насилие (высокое): Уменьшите графическое изображение насилия. "
             "Рекомендации: показать сцену за кадром, использовать обрезку кадра, "
             "заменить явное насилие на подразумеваемое действие."
         )
-    elif scene_scores['violence'] >= 0.4:
+    elif scene_scores["violence"] >= 0.4:
         recommendations.append(
             "⚔️ Насилие (умеренное): Сократите детализацию сцен драки/конфликта. "
             "Рекомендации: убрать крупные планы ударов, сократить длительность сцены."
         )
 
     # кровь и увечья
-    if scene_scores['gore'] >= 0.6:
+    if scene_scores["gore"] >= 0.6:
         recommendations.append(
             "🩸 Кровь/увечья (высокое): Уберите графическое изображение крови и ран. "
             "Рекомендации: не показывать раны крупным планом, убрать описания 'blood', 'guts', "
             "'SPLORCH', заменить на более нейтральные формулировки типа 'ранен', 'пострадал'."
         )
-    elif scene_scores['gore'] >= 0.3:
+    elif scene_scores["gore"] >= 0.3:
         recommendations.append(
             "💉 Кровь/увечья (умеренное): Смягчите описание телесных повреждений. "
             "Рекомендации: уменьшить количество упоминаний крови."
         )
 
     # сексуальный контент
-    if scene_scores['sex_act'] >= 0.6:
+    if scene_scores["sex_act"] >= 0.6:
         recommendations.append(
             "🔞 Сексуальный контент (эксплицитный): Удалите или смягчите явные сексуальные сцены. "
             "Рекомендации: использовать монтаж с переходом, показать начало и конец без деталей."
         )
-    elif scene_scores['sex_act'] >= 0.3:
+    elif scene_scores["sex_act"] >= 0.3:
         recommendations.append(
             "💋 Сексуальный контент (умеренный): Смягчите романтические/сексуальные элементы."
         )
 
     # нагота
-    if scene_scores['nudity'] >= 0.4:
+    if scene_scores["nudity"] >= 0.4:
         recommendations.append(
             "👙 Нагота: Уберите или смягчите сцены с обнаженным телом. "
             "Рекомендации: использовать одежду, изменить ракурс камеры, убрать описания нижнего белья."
         )
 
     # ненормативная лексика
-    if scene_scores['profanity'] >= 0.5:
+    if scene_scores["profanity"] >= 0.5:
         recommendations.append(
             "🤬 Ненормативная лексика (частая): Замените мат на более мягкие выражения. "
             "Рекомендации: заменить 'fuck', 'shit', 'bitch' на 'damn', 'hell' или эвфемизмы."
         )
-    elif scene_scores['profanity'] >= 0.3:
+    elif scene_scores["profanity"] >= 0.3:
         recommendations.append(
             "😠 Грубая лексика: Сократите количество нецензурных слов."
         )
 
     # наркотики
-    if scene_scores['drugs'] >= 0.4:
+    if scene_scores["drugs"] >= 0.4:
         recommendations.append(
             "💊 Наркотики/алкоголь: Уменьшите показ употребления веществ. "
             "Рекомендации: показать последствия вместо процесса, сократить экранное время."
         )
 
     # дети в опасности
-    if scene_scores['child_risk'] >= 0.5:
+    if scene_scores["child_risk"] >= 0.5:
         recommendations.append(
             "👶 Дети в опасности: Критически важно! Уберите сцены с угрозой детям. "
             "Рекомендации: заменить детей на взрослых персонажей, убрать сцену полностью, "
@@ -585,87 +723,87 @@ def map_scores_to_rating(agg: Dict[str, Any]) -> Dict[str, Any]:
     """
     reasons = []
     excerpts = []
-    rating = '0+'
+    rating = "0+"
 
     # 18+ - эксплицитный контент (только для крайне графичного контента)
-    if agg['sex_act'] >= 0.75 or agg['gore'] >= 0.95:
-        rating = '18+'
-        if agg['sex_act'] >= 0.75:
+    if agg["sex_act"] >= 0.75 or agg["gore"] >= 0.95:
+        rating = "18+"
+        if agg["sex_act"] >= 0.75:
             reasons.append("эксплицитные сцены сексуального характера")
-            if agg['excerpts']['sex']:
-                excerpts.extend(agg['excerpts']['sex'][:2])
-        if agg['gore'] >= 0.95:
+            if agg["excerpts"]["sex"]:
+                excerpts.extend(agg["excerpts"]["sex"][:2])
+        if agg["gore"] >= 0.95:
             reasons.append("крайне графическое изображение жестокости и увечий")
-            if agg['excerpts']['gore']:
-                excerpts.extend(agg['excerpts']['gore'][:2])
+            if agg["excerpts"]["gore"]:
+                excerpts.extend(agg["excerpts"]["gore"][:2])
 
     # 18+ - дети в опасности с насилием
-    elif agg['child_risk'] > 0.7 and (agg['sex_act'] >= 0.5 or agg['violence'] >= 0.8):
-        rating = '18+'
+    elif agg["child_risk"] > 0.7 and (agg["sex_act"] >= 0.5 or agg["violence"] >= 0.8):
+        rating = "18+"
         reasons.append("опасные или жестокие сцены с участием несовершеннолетних")
-        if agg['excerpts']['violence']:
-            excerpts.extend(agg['excerpts']['violence'][:2])
+        if agg["excerpts"]["violence"]:
+            excerpts.extend(agg["excerpts"]["violence"][:2])
 
     # 16+ - интенсивное насилие с кровью
-    elif (agg['violence'] >= 0.8 and agg['gore'] >= 0.7) or agg['gore'] >= 0.75:
-        rating = '16+'
+    elif (agg["violence"] >= 0.8 and agg["gore"] >= 0.7) or agg["gore"] >= 0.75:
+        rating = "16+"
         reasons.append("интенсивное графическое насилие с кровью и увечьями")
-        if agg['excerpts']['violence']:
-            excerpts.extend(agg['excerpts']['violence'][:2])
-        if agg['excerpts']['gore']:
-            excerpts.extend(agg['excerpts']['gore'][:1])
+        if agg["excerpts"]["violence"]:
+            excerpts.extend(agg["excerpts"]["violence"][:2])
+        if agg["excerpts"]["gore"]:
+            excerpts.extend(agg["excerpts"]["gore"][:1])
 
     # 16+ - явное насилие
-    elif agg['violence'] >= 0.65 or agg['gore'] >= 0.5:
-        rating = '16+'
-        if agg['violence'] >= 0.65:
+    elif agg["violence"] >= 0.65 or agg["gore"] >= 0.5:
+        rating = "16+"
+        if agg["violence"] >= 0.65:
             reasons.append("интенсивное насилие и сцены убийств")
-            if agg['excerpts']['violence']:
-                excerpts.extend(agg['excerpts']['violence'][:2])
-        if agg['gore'] >= 0.5:
+            if agg["excerpts"]["violence"]:
+                excerpts.extend(agg["excerpts"]["violence"][:2])
+        if agg["gore"] >= 0.5:
             reasons.append("изображение крови и телесных повреждений")
-            if agg['excerpts']['gore']:
-                excerpts.extend(agg['excerpts']['gore'][:2])
+            if agg["excerpts"]["gore"]:
+                excerpts.extend(agg["excerpts"]["gore"][:2])
 
     # 16+ - сексуальный контент средней степени
-    elif agg['sex_act'] >= 0.35 or agg['nudity'] >= 0.4:
-        rating = '16+'
+    elif agg["sex_act"] >= 0.35 or agg["nudity"] >= 0.4:
+        rating = "16+"
         reasons.append("сексуальный контент и нагота")
-        if agg['excerpts']['sex']:
-            excerpts.extend(agg['excerpts']['sex'][:2])
-        if agg['excerpts']['nudity']:
-            excerpts.extend(agg['excerpts']['nudity'][:2])
+        if agg["excerpts"]["sex"]:
+            excerpts.extend(agg["excerpts"]["sex"][:2])
+        if agg["excerpts"]["nudity"]:
+            excerpts.extend(agg["excerpts"]["nudity"][:2])
 
     # 12+ - умеренный контент
-    elif agg['violence'] >= 0.4 or agg['profanity'] >= 0.5 or agg['drugs'] >= 0.4:
-        rating = '12+'
-        if agg['violence'] >= 0.4:
+    elif agg["violence"] >= 0.4 or agg["profanity"] >= 0.5 or agg["drugs"] >= 0.4:
+        rating = "12+"
+        if agg["violence"] >= 0.4:
             reasons.append("умеренное насилие и угрозы")
-            if agg['excerpts']['violence']:
-                excerpts.extend(agg['excerpts']['violence'][:1])
-        if agg['profanity'] >= 0.5:
+            if agg["excerpts"]["violence"]:
+                excerpts.extend(agg["excerpts"]["violence"][:1])
+        if agg["profanity"] >= 0.5:
             reasons.append("ненормативная лексика")
-            if agg['excerpts']['profanity']:
-                excerpts.extend(agg['excerpts']['profanity'][:1])
-        if agg['drugs'] >= 0.4:
+            if agg["excerpts"]["profanity"]:
+                excerpts.extend(agg["excerpts"]["profanity"][:1])
+        if agg["drugs"] >= 0.4:
             reasons.append("употребление алкоголя, табака или наркотиков")
-            if agg['excerpts']['drugs']:
-                excerpts.extend(agg['excerpts']['drugs'][:1])
+            if agg["excerpts"]["drugs"]:
+                excerpts.extend(agg["excerpts"]["drugs"][:1])
 
     # 6+ - минимальный контент
-    elif agg['violence'] >= 0.2 or agg['profanity'] >= 0.3:
-        rating = '6+'
+    elif agg["violence"] >= 0.2 or agg["profanity"] >= 0.3:
+        rating = "6+"
         reasons.append("незначительное насилие или редкая грубая лексика")
 
     # 0+ - контент для всех
     else:
-        rating = '0+'
+        rating = "0+"
         reasons.append("контент без возрастных ограничений")
 
     return {
-        'rating': rating,
-        'reasons': reasons,
-        'evidence_excerpts': excerpts[:5]  # максимум 5 примеров
+        "rating": rating,
+        "reasons": reasons,
+        "evidence_excerpts": excerpts[:5],  # максимум 5 примеров
     }
 
 
@@ -677,9 +815,9 @@ def parse_script_to_scenes(txt: str) -> List[Dict[str, Any]]:
     scenes = []
     # добавлена поддержка русских маркеров сцен (ИНТ./ЭКСТ.)
     parts = re.split(
-        r'(?=(?:INT\.|EXT\.|ИНТ\.|ЭКСТ\.|scene_heading\s*:|SCENE HEADING\s*:))',
+        r"(?=(?:INT\.|EXT\.|ИНТ\.|ЭКСТ\.|scene_heading\s*:|SCENE HEADING\s*:))",
         txt,
-        flags=re.I
+        flags=re.I,
     )
 
     idx = 0
@@ -689,19 +827,17 @@ def parse_script_to_scenes(txt: str) -> List[Dict[str, Any]]:
             continue
 
         # поддержка русских и английских маркеров сцен
-        heading_match = re.match(r'((?:INT\.|EXT\.|ИНТ\.|ЭКСТ\.).{0,120})', text, flags=re.I)
+        heading_match = re.match(
+            r"((?:INT\.|EXT\.|ИНТ\.|ЭКСТ\.).{0,120})", text, flags=re.I
+        )
         heading = heading_match.group(1).strip() if heading_match else f"scene_{idx}"
 
-        scenes.append({
-            'scene_id': idx,
-            'heading': heading,
-            'text': text
-        })
+        scenes.append({"scene_id": idx, "heading": heading, "text": text})
         idx += 1
 
     # если не нашли сцен, обрабатываем весь текст как одну сцену
     if len(scenes) < 3:
-        scenes = [{'scene_id': 0, 'heading': 'full_script', 'text': txt}]
+        scenes = [{"scene_id": 0, "heading": "full_script", "text": txt}]
 
     return scenes
 
@@ -717,11 +853,13 @@ def extract_text_from_pdf(pdf_path: str) -> str:
         Текст из PDF файла
     """
     if not PDF_SUPPORT:
-        raise ImportError("PyPDF2 не установлен. Установите с помощью: pip install PyPDF2")
+        raise ImportError(
+            "PyPDF2 не установлен. Установите с помощью: pip install PyPDF2"
+        )
 
     text = []
     try:
-        with open(pdf_path, 'rb') as file:
+        with open(pdf_path, "rb") as file:
             pdf_reader = PyPDF2.PdfReader(file)
             print(f"Обработка PDF: {len(pdf_reader.pages)} страниц")
 
@@ -730,7 +868,7 @@ def extract_text_from_pdf(pdf_path: str) -> str:
                 if page_text:
                     text.append(page_text)
 
-        return '\n'.join(text)
+        return "\n".join(text)
     except Exception as e:
         print(f"Ошибка при чтении PDF: {e}")
         raise
@@ -749,12 +887,12 @@ def analyze_script_file(path: str) -> Dict[str, Any]:
     """
     # определяем тип файла и читаем
     file_path = Path(path)
-    if file_path.suffix.lower() == '.pdf':
+    if file_path.suffix.lower() == ".pdf":
         print(f"Обнаружен PDF файл: {file_path.name}")
         txt = extract_text_from_pdf(str(file_path))
     else:
         # читаем текстовый файл
-        txt = file_path.read_text(encoding='utf-8', errors='ignore')
+        txt = file_path.read_text(encoding="utf-8", errors="ignore")
 
     # разбиваем на сцены
     scenes = parse_script_to_scenes(txt)
@@ -764,7 +902,7 @@ def analyze_script_file(path: str) -> Dict[str, Any]:
     print("Анализ сцен...")
     features = []
     for scene in tqdm(scenes, desc="Обработка сцен"):
-        feat = extract_scene_features(scene['text'])
+        feat = extract_scene_features(scene["text"])
         features.append(feat)
 
     # нормализуем и применяем контекстную коррекцию
@@ -772,8 +910,16 @@ def analyze_script_file(path: str) -> Dict[str, Any]:
 
     # агрегируем оценки
     # используем гибридный подход: учитываем как максимум, так и частоту
-    score_keys = ['violence', 'gore', 'sex_act', 'nudity', 'profanity', 'drugs', 'child_risk']
-    agg = {}
+    score_keys = [
+        "violence",
+        "gore",
+        "sex_act",
+        "nudity",
+        "profanity",
+        "drugs",
+        "child_risk",
+    ]
+    agg: dict[str, Any] = {}
     for k in score_keys:
         values = [s[k] for s in scores]
         max_val = float(np.max(values))
@@ -783,12 +929,12 @@ def analyze_script_file(path: str) -> Dict[str, Any]:
         # для насилия и крови: взвешенное среднее максимума и 95-го перцентиля
         # если есть 1-2 очень графичные сцены, но остальные нормальные - это 16+, а не 18+
         # если много графичных сцен - это 18+
-        if k in ['violence', 'gore']:
+        if k in ["violence", "gore"]:
             # 70% максимум + 30% p95 дает баланс
             agg[k] = max_val * 0.7 + p95_val * 0.3
 
         # для сексуального контента и наготы - больше вес на максимум
-        elif k in ['sex_act', 'nudity', 'child_risk']:
+        elif k in ["sex_act", "nudity", "child_risk"]:
             agg[k] = max_val * 0.85 + p90_val * 0.15
 
         # для ненормативной лексики и наркотиков используем 90-й перцентиль
@@ -797,19 +943,21 @@ def analyze_script_file(path: str) -> Dict[str, Any]:
             agg[k] = float(np.percentile(values, 90))
 
     # собираем все примеры из всех сцен
-    all_excerpts = {
-        'violence': [],
-        'gore': [],
-        'sex': [],
-        'nudity': [],  # добавлены примеры наготы
-        'profanity': [],
-        'drugs': []
+    all_excerpts: dict[str, list[Any]] = {
+        "violence": [],
+        "gore": [],
+        "sex": [],
+        "nudity": [],  # добавлены примеры наготы
+        "profanity": [],
+        "drugs": [],
     }
     for s in scores:
         for key in all_excerpts.keys():
-            all_excerpts[key].extend(s['excerpts'][key])
+            all_excerpts[key].extend(s["excerpts"][key])
 
-    agg['excerpts'] = {k: v[:5] for k, v in all_excerpts.items()}  # Топ-5 примеров каждого типа
+    agg["excerpts"] = {
+        k: v[:5] for k, v in all_excerpts.items()
+    }  # Топ-5 примеров каждого типа
 
     # определяем рейтинг
     rating_info = map_scores_to_rating(agg)
@@ -818,12 +966,12 @@ def analyze_script_file(path: str) -> Dict[str, Any]:
     ranking = []
     for scene, score in zip(scenes, scores):
         weight = (
-            score['violence'] * 0.5 +
-            score['gore'] * 0.8 +
-            score['sex_act'] * 0.9 +
-            score['profanity'] * 0.3 +
-            score['drugs'] * 0.3 +
-            score['child_risk'] * 0.7
+            score["violence"] * 0.5
+            + score["gore"] * 0.8
+            + score["sex_act"] * 0.9
+            + score["profanity"] * 0.3
+            + score["drugs"] * 0.3
+            + score["child_risk"] * 0.7
         )
         ranking.append((weight, scene, score))
 
@@ -836,36 +984,40 @@ def analyze_script_file(path: str) -> Dict[str, Any]:
             # генерируем рекомендации для каждой проблемной сцены
             recommendations = generate_scene_recommendations(score)
 
-            top_scenes.append({
-                'scene_id': scene['scene_id'],
-                'heading': scene['heading'],
-                'sample_text': scene['text'][:300].replace('\n', ' ') + '...',
-                'weight': round(float(weight), 3),
-                'scores': {k: round(score[k], 2) for k in score_keys},
-                'recommendations': recommendations
-            })
+            top_scenes.append(
+                {
+                    "scene_id": scene["scene_id"],
+                    "heading": scene["heading"],
+                    "sample_text": scene["text"][:300].replace("\n", " ") + "...",
+                    "weight": round(float(weight), 3),
+                    "scores": {k: round(score[k], 2) for k in score_keys},
+                    "recommendations": recommendations,
+                }
+            )
 
     # формируем итоговый результат
     result = {
-        'file': str(Path(path).name),
-        'predicted_rating': rating_info['rating'],
-        'reasons': rating_info['reasons'],
-        'evidence_excerpts': rating_info['evidence_excerpts'],
-        'aggregated_scores': {k: round(agg[k], 3) for k in score_keys},
-        'top_trigger_scenes': top_scenes,
-        'total_scenes': len(scenes)
+        "file": str(Path(path).name),
+        "predicted_rating": rating_info["rating"],
+        "reasons": rating_info["reasons"],
+        "evidence_excerpts": rating_info["evidence_excerpts"],
+        "aggregated_scores": {k: round(agg[k], 3) for k in score_keys},
+        "top_trigger_scenes": top_scenes,
+        "total_scenes": len(scenes),
     }
 
     return result
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
 
     if len(sys.argv) < 2:
         print("Использование: python repair_pipeline.py <путь_к_сценарию.txt>")
         print("\nПример:")
-        print("  python repair_pipeline.py dataset/BERT_annotations/A_Clockwork_Orange_0066921_anno.txt")
+        print(
+            "  python repair_pipeline.py dataset/BERT_annotations/A_Clockwork_Orange_0066921_anno.txt"
+        )
         sys.exit(0)
 
     script_path = sys.argv[1]
