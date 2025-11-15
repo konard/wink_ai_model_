@@ -11,15 +11,21 @@ class ModificationConfig(BaseModel):
     type: str = Field(..., description="Type of modification to apply")
     params: Dict[str, Any] = Field(default_factory=dict)
     targets: Optional[EntityTarget] = None
-    scope: Optional[List[int]] = Field(None, description="Scene IDs to apply modification to")
+    scope: Optional[List[int]] = Field(
+        None, description="Scene IDs to apply modification to"
+    )
 
 
 class StructuredWhatIfRequest(BaseModel):
     script_text: str
     modifications: List[ModificationConfig]
     use_llm: bool = Field(default=False, description="Use LLM for intelligent rewrites")
-    llm_provider: Optional[str] = Field(default=None, description="LLM provider (openai, anthropic, local)")
-    preserve_structure: bool = Field(default=True, description="Preserve script formatting")
+    llm_provider: Optional[str] = Field(
+        default=None, description="LLM provider (openai, anthropic, local)"
+    )
+    preserve_structure: bool = Field(
+        default=True, description="Preserve script formatting"
+    )
 
 
 class EntityInfo(BaseModel):

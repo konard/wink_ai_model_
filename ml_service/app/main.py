@@ -16,7 +16,9 @@ from .schemas import (
 from .pipeline import get_pipeline
 from .what_if import get_what_if_analyzer
 from .what_if_advanced import get_advanced_analyzer
-from .what_if_advanced.schemas import StructuredWhatIfRequest as InternalStructuredRequest
+from .what_if_advanced.schemas import (
+    StructuredWhatIfRequest as InternalStructuredRequest,
+)
 from .rating_advisor import RatingAdvisor
 from .rating_advisor.schemas import RatingAdvisorRequest as InternalAdvisorRequest
 from .config import settings

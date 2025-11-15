@@ -135,12 +135,18 @@ class ContentReductionStrategy(ModificationStrategy):
         metadata = {
             "content_types_reduced": content_types,
             "total_replacements": total_replacements,
-            "scenes_modified": sum(1 for s in modified_scenes if s["text"] != scenes[modified_scenes.index(s)]["text"]),
+            "scenes_modified": sum(
+                1
+                for s in modified_scenes
+                if s["text"] != scenes[modified_scenes.index(s)]["text"]
+            ),
         }
 
         return modified_scenes, metadata
 
-    def _apply_replacements(self, text: str, replacements: Dict[str, str]) -> Tuple[str, int]:
+    def _apply_replacements(
+        self, text: str, replacements: Dict[str, str]
+    ) -> Tuple[str, int]:
         """Apply all replacements to text."""
         modified_text = text
         count = 0
@@ -154,7 +160,9 @@ class ContentReductionStrategy(ModificationStrategy):
                 pattern_regex = r"\b" + re.escape(pattern) + r"\w*"
                 matches = re.findall(pattern_regex, modified_text, re.I)
                 count += len(matches)
-                modified_text = re.sub(pattern_regex, replacement, modified_text, flags=re.I)
+                modified_text = re.sub(
+                    pattern_regex, replacement, modified_text, flags=re.I
+                )
 
         return modified_text, count
 

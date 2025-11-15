@@ -49,7 +49,9 @@ class SceneRemovalStrategy(ModificationStrategy):
                     scenes_to_remove.add(scene.get("scene_id", 0))
 
         original_count = len(scenes)
-        filtered_scenes = [s for s in scenes if s.get("scene_id", 0) not in scenes_to_remove]
+        filtered_scenes = [
+            s for s in scenes if s.get("scene_id", 0) not in scenes_to_remove
+        ]
 
         for idx, scene in enumerate(filtered_scenes):
             scene["scene_id"] = idx

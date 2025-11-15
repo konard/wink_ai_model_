@@ -3,7 +3,9 @@ from typing import List, Dict, Optional, Literal
 
 
 class RecommendationAction(BaseModel):
-    action_type: Literal["remove_scene", "reduce_content", "modify_dialogue", "rewrite_scene"]
+    action_type: Literal[
+        "remove_scene", "reduce_content", "modify_dialogue", "rewrite_scene"
+    ]
     scene_id: int
     description: str
     impact_score: float = Field(..., ge=0, le=1)

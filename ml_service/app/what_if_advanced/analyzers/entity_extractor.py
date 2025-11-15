@@ -5,6 +5,7 @@ from loguru import logger
 
 try:
     import spacy
+
     SPACY_AVAILABLE = True
 except ImportError:
     SPACY_AVAILABLE = False
@@ -75,8 +76,10 @@ class EntityExtractor:
             "objects": defaultdict(lambda: {"mentions": 0, "scenes": set()}),
         }
 
-        character_pattern = r'\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b(?=\s*:|\s+says|\s+yells|\s+whispers)'
-        location_pattern = r'(?:INT\.|EXT\.)\s+([A-Z\s]+?)(?:\s*-\s*|\n)'
+        character_pattern = (
+            r"\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b(?=\s*:|\s+says|\s+yells|\s+whispers)"
+        )
+        location_pattern = r"(?:INT\.|EXT\.)\s+([A-Z\s]+?)(?:\s*-\s*|\n)"
 
         for scene in scenes:
             text = scene["text"]

@@ -43,7 +43,7 @@ EXAMPLE_1_REDUCE_VIOLENCE = {
             "type": "reduce_violence",
             "params": {
                 "content_types": ["violence", "gore"],
-            }
+            },
         }
     ],
     "use_llm": False,
@@ -58,7 +58,7 @@ EXAMPLE_2_REDUCE_PROFANITY = {
             "type": "reduce_profanity",
             "params": {
                 "content_types": ["profanity"],
-            }
+            },
         }
     ],
 }
@@ -71,7 +71,7 @@ EXAMPLE_3_REMOVE_SCENES = {
             "type": "remove_scenes",
             "params": {
                 "scene_ids": [0, 2],
-            }
+            },
         }
     ],
 }
@@ -84,7 +84,7 @@ EXAMPLE_4_REMOVE_BY_TYPE = {
             "type": "remove_scenes",
             "params": {
                 "scene_types": ["action"],
-            }
+            },
         }
     ],
 }
@@ -99,7 +99,7 @@ EXAMPLE_5_RENAME_CHARACTER = {
                 "action": "rename",
                 "character_name": "JOHN",
                 "new_name": "JACK",
-            }
+            },
         }
     ],
 }
@@ -114,7 +114,7 @@ EXAMPLE_6_REMOVE_CHARACTER = {
                 "action": "remove",
                 "character_name": "VILLAIN",
                 "remove_scenes": True,
-            }
+            },
         }
     ],
 }
@@ -127,19 +127,19 @@ EXAMPLE_7_MULTIPLE_MODS = {
             "type": "reduce_violence",
             "params": {
                 "content_types": ["violence", "gore"],
-            }
+            },
         },
         {
             "type": "reduce_profanity",
             "params": {
                 "content_types": ["profanity"],
-            }
+            },
         },
         {
             "type": "reduce_drugs",
             "params": {
                 "content_types": ["drugs"],
-            }
+            },
         },
     ],
 }
@@ -156,8 +156,8 @@ EXAMPLE_8_CUSTOM_REPLACEMENTS = {
                     "gun": "badge",
                     "knife": "document",
                     "fight": "argue",
-                }
-            }
+                },
+            },
         }
     ],
 }
@@ -171,7 +171,7 @@ EXAMPLE_9_TARGET_CHARACTERS = {
             "params": {
                 "content_types": ["profanity"],
                 "target_characters": ["JOHN"],
-            }
+            },
         }
     ],
 }
@@ -186,7 +186,7 @@ EXAMPLE_10_LLM_REWRITE = {
                 "instruction": "Rewrite the violent confrontation as a tense verbal argument instead",
                 "scope": [0],
                 "preserve_style": True,
-            }
+            },
         }
     ],
     "use_llm": True,
@@ -211,6 +211,7 @@ ALL_EXAMPLES = {
 def print_example(name: str):
     """Print an example request."""
     import json
+
     print(f"\n{'='*60}")
     print(f"EXAMPLE: {name}")
     print(f"{'='*60}")

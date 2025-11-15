@@ -19,7 +19,7 @@ class CharacterFocusedStrategy(ModificationStrategy):
         scenes: List[Dict[str, Any]],
         params: Dict[str, Any],
         entities: Dict[str, List[Any]],
-        **kwargs
+        **kwargs,
     ) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
         """
         Apply character-focused modifications.
@@ -76,7 +76,9 @@ class CharacterFocusedStrategy(ModificationStrategy):
             lines_removed = 0
 
             for scene in scenes:
-                modified_text = self._remove_character_lines(scene["text"], character_name)
+                modified_text = self._remove_character_lines(
+                    scene["text"], character_name
+                )
                 if modified_text != scene["text"]:
                     lines_removed += 1
 
@@ -101,7 +103,11 @@ class CharacterFocusedStrategy(ModificationStrategy):
                 skip_next = True
                 continue
 
-            if skip_next and line.strip() and not re.match(r"^\s*[A-Z][A-Z\s]+[:.]", line):
+            if (
+                skip_next
+                and line.strip()
+                and not re.match(r"^\s*[A-Z][A-Z\s]+[:.]", line)
+            ):
                 skip_next = False
                 continue
 
@@ -133,7 +139,10 @@ class CharacterFocusedStrategy(ModificationStrategy):
             modified_scene = scene.copy()
             modified_scene["text"] = modified_text
 
-            if "characters" in modified_scene and character_name in modified_scene["characters"]:
+            if (
+                "characters" in modified_scene
+                and character_name in modified_scene["characters"]
+            ):
                 modified_scene["characters"] = [
                     new_name if c == character_name else c
                     for c in modified_scene["characters"]

@@ -3,12 +3,14 @@ from loguru import logger
 
 try:
     import openai
+
     OPENAI_AVAILABLE = True
 except ImportError:
     OPENAI_AVAILABLE = False
 
 try:
     import anthropic
+
     ANTHROPIC_AVAILABLE = True
 except ImportError:
     ANTHROPIC_AVAILABLE = False
@@ -28,9 +30,13 @@ class LLMGenerator:
         self.model = model or self._get_default_model()
 
         if self.provider == "openai" and not OPENAI_AVAILABLE:
-            raise ImportError("OpenAI package not installed. Install with: pip install openai")
+            raise ImportError(
+                "OpenAI package not installed. Install with: pip install openai"
+            )
         if self.provider == "anthropic" and not ANTHROPIC_AVAILABLE:
-            raise ImportError("Anthropic package not installed. Install with: pip install anthropic")
+            raise ImportError(
+                "Anthropic package not installed. Install with: pip install anthropic"
+            )
 
         self._init_client()
 
@@ -50,7 +56,9 @@ class LLMGenerator:
             self.client = anthropic.Anthropic(api_key=self.api_key)
         else:
             self.client = None
-            logger.warning(f"Unknown provider: {self.provider}, LLM generation disabled")
+            logger.warning(
+                f"Unknown provider: {self.provider}, LLM generation disabled"
+            )
 
     def rewrite_scene(
         self,
@@ -124,7 +132,10 @@ REQUIREMENTS:
         return response.content[0].text.strip()
 
     def generate_alternative_action(
-        self, original_action: str, replacement_type: str, context: Optional[Dict[str, Any]] = None
+        self,
+        original_action: str,
+        replacement_type: str,
+        context: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Generate alternative action description."""
         instructions = {
@@ -134,5 +145,7 @@ REQUIREMENTS:
             "soften_tone": "Rewrite to be less intense and more suitable for younger audiences",
         }
 
-        instruction = instructions.get(replacement_type, "Rewrite to be more appropriate")
+        instruction = instructions.get(
+            replacement_type, "Rewrite to be more appropriate"
+        )
         return self.rewrite_scene(original_action, instruction, context)

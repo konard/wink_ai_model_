@@ -24,14 +24,13 @@ class LLMRatingAdvisor:
         problematic_scenes: List[SceneIssue],
         current_rating: str,
         target_rating: str,
-        language: str = "en"
+        language: str = "en",
     ) -> List[Dict]:
         if not self.openai_client and not self.anthropic_client:
             return []
 
         prompt = self._build_prompt(
-            script_excerpt, problematic_scenes,
-            current_rating, target_rating, language
+            script_excerpt, problematic_scenes, current_rating, target_rating, language
         )
 
         try:
@@ -51,7 +50,7 @@ class LLMRatingAdvisor:
         scene_content: str,
         issues: Dict[str, float],
         target_rating: str,
-        language: str = "en"
+        language: str = "en",
     ) -> Optional[str]:
         if not self.openai_client and not self.anthropic_client:
             return None
@@ -69,8 +68,12 @@ class LLMRatingAdvisor:
             return None
 
     def _build_prompt(
-        self, script_excerpt: str, scenes: List[SceneIssue],
-        current: str, target: str, language: str
+        self,
+        script_excerpt: str,
+        scenes: List[SceneIssue],
+        current: str,
+        target: str,
+        language: str,
     ) -> str:
         if language == "ru":
             return f"""Ты эксперт по возрастным рейтингам фильмов. Проанализируй сценарий и дай конкретные рекомендации.
@@ -118,8 +121,7 @@ Provide 5-7 specific, actionable recommendations in JSON format:
 Respond with JSON array only."""
 
     def _build_rewrite_prompt(
-        self, scene: str, issues: Dict[str, float],
-        target: str, language: str
+        self, scene: str, issues: Dict[str, float], target: str, language: str
     ) -> str:
         issue_list = ", ".join(issues.keys())
 
@@ -154,14 +156,18 @@ Rewritten scene:"""
         lines = []
         for scene in scenes:
             issues = ", ".join([f"{k} ({v:.2f})" for k, v in scene.issues.items()])
-            lines.append(f"Сцена {scene.scene_number}: {issues}\n{scene.content_preview[:150]}...")
+            lines.append(
+                f"Сцена {scene.scene_number}: {issues}\n{scene.content_preview[:150]}..."
+            )
         return "\n\n".join(lines)
 
     def _format_scenes_en(self, scenes: List[SceneIssue]) -> str:
         lines = []
         for scene in scenes:
             issues = ", ".join([f"{k} ({v:.2f})" for k, v in scene.issues.items()])
-            lines.append(f"Scene {scene.scene_number}: {issues}\n{scene.content_preview[:150]}...")
+            lines.append(
+                f"Scene {scene.scene_number}: {issues}\n{scene.content_preview[:150]}..."
+            )
         return "\n\n".join(lines)
 
     def _call_openai(self, prompt: str, temperature: float = 0.3) -> str:
@@ -169,7 +175,7 @@ Rewritten scene:"""
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
             temperature=temperature,
-            max_tokens=2000
+            max_tokens=2000,
         )
         return response.choices[0].message.content
 
@@ -178,7 +184,7 @@ Rewritten scene:"""
             model="claude-3-5-haiku-20241022",
             max_tokens=2000,
             temperature=temperature,
-            messages=[{"role": "user", "content": prompt}]
+            messages=[{"role": "user", "content": prompt}],
         )
         return response.content[0].text
 

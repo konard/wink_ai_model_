@@ -23,7 +23,7 @@ class LLMRewriteStrategy(ModificationStrategy):
         scenes: List[Dict[str, Any]],
         params: Dict[str, Any],
         entities: Dict[str, List[Any]],
-        **kwargs
+        **kwargs,
     ) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
         """
         Rewrite scenes using LLM with context awareness.
@@ -39,7 +39,9 @@ class LLMRewriteStrategy(ModificationStrategy):
             logger.warning("LLM generator not available, skipping LLM rewrite")
             return scenes, {"error": "LLM generator not configured"}
 
-        instruction = params.get("instruction", "Rewrite to be more appropriate for general audiences")
+        instruction = params.get(
+            "instruction", "Rewrite to be more appropriate for general audiences"
+        )
         scope = params.get("scope")
         target_characters = params.get("target_characters")
         preserve_style = params.get("preserve_style", True)

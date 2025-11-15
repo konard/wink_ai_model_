@@ -60,7 +60,9 @@ class SceneClassifier:
             embeddings = self.embedder.encode(templates, convert_to_numpy=True)
             self.type_embeddings[scene_type] = np.mean(embeddings, axis=0)
 
-        logger.info(f"SceneClassifier initialized with {len(self.scene_type_templates)} scene types")
+        logger.info(
+            f"SceneClassifier initialized with {len(self.scene_type_templates)} scene types"
+        )
 
     def classify_scene(self, scene_text: str, top_k: int = 3) -> List[Dict[str, Any]]:
         """Classify a single scene into types."""
@@ -88,7 +90,9 @@ class SceneClassifier:
 
             classified_scene = scene.copy()
             classified_scene["scene_type"] = primary_type
-            classified_scene["type_confidence"] = scene_types[0]["confidence"] if scene_types else 0.0
+            classified_scene["type_confidence"] = (
+                scene_types[0]["confidence"] if scene_types else 0.0
+            )
             classified_scene["all_types"] = scene_types
 
             classified_scenes.append(classified_scene)
@@ -96,7 +100,10 @@ class SceneClassifier:
         return classified_scenes
 
     def filter_scenes_by_type(
-        self, scenes: List[Dict[str, Any]], scene_types: List[str], min_confidence: float = 0.3
+        self,
+        scenes: List[Dict[str, Any]],
+        scene_types: List[str],
+        min_confidence: float = 0.3,
     ) -> List[int]:
         """Return scene IDs that match the given types."""
         matching_scene_ids = []

@@ -12,11 +12,9 @@ class VersionService:
         db: AsyncSession,
         script_id: int,
         change_description: Optional[str] = None,
-        make_current: bool = True
+        make_current: bool = True,
     ) -> ScriptVersion:
-        result = await db.execute(
-            select(Script).where(Script.id == script_id)
-        )
+        result = await db.execute(select(Script).where(Script.id == script_id))
         script = result.scalar_one_or_none()
         if not script:
             raise ValueError(f"Script {script_id} not found")
@@ -27,25 +25,30 @@ class VersionService:
             .order_by(desc(ScriptVersion.version_number))
         )
         latest_version = result.scalar_one_or_none()
-        new_version_number = (latest_version.version_number + 1) if latest_version else 1
+        new_version_number = (
+            (latest_version.version_number + 1) if latest_version else 1
+        )
 
         scenes_result = await db.execute(
             select(Scene).where(Scene.script_id == script_id)
         )
         scenes = scenes_result.scalars().all()
-        scenes_data = [{
-            "scene_id": scene.scene_id,
-            "heading": scene.heading,
-            "violence": scene.violence,
-            "gore": scene.gore,
-            "sex_act": scene.sex_act,
-            "nudity": scene.nudity,
-            "profanity": scene.profanity,
-            "drugs": scene.drugs,
-            "child_risk": scene.child_risk,
-            "weight": scene.weight,
-            "sample_text": scene.sample_text
-        } for scene in scenes]
+        scenes_data = [
+            {
+                "scene_id": scene.scene_id,
+                "heading": scene.heading,
+                "violence": scene.violence,
+                "gore": scene.gore,
+                "sex_act": scene.sex_act,
+                "nudity": scene.nudity,
+                "profanity": scene.profanity,
+                "drugs": scene.drugs,
+                "child_risk": scene.child_risk,
+                "weight": scene.weight,
+                "sample_text": scene.sample_text,
+            }
+            for scene in scenes
+        ]
 
         new_version = ScriptVersion(
             script_id=script_id,
@@ -60,24 +63,20 @@ class VersionService:
             scenes_data=scenes_data,
             metadata={
                 "model_version": script.model_version,
-                "created_from": "manual_save"
-            }
+                "created_from": "manual_save",
+            },
         )
 
         if make_current:
             await db.execute(
-                select(ScriptVersion)
-                .where(and_(
-                    ScriptVersion.script_id == script_id,
-                    ScriptVersion.is_current
-                ))
+                select(ScriptVersion).where(
+                    and_(ScriptVersion.script_id == script_id, ScriptVersion.is_current)
+                )
             )
             result = await db.execute(
-                select(ScriptVersion)
-                .where(and_(
-                    ScriptVersion.script_id == script_id,
-                    ScriptVersion.is_current
-                ))
+                select(ScriptVersion).where(
+                    and_(ScriptVersion.script_id == script_id, ScriptVersion.is_current)
+                )
             )
             for version in result.scalars():
                 version.is_current = False
@@ -91,10 +90,7 @@ class VersionService:
         return new_version
 
     @staticmethod
-    async def get_versions(
-        db: AsyncSession,
-        script_id: int
-    ) -> List[ScriptVersion]:
+    async def get_versions(db: AsyncSession, script_id: int) -> List[ScriptVersion]:
         result = await db.execute(
             select(ScriptVersion)
             .where(ScriptVersion.script_id == script_id)
@@ -104,40 +100,36 @@ class VersionService:
 
     @staticmethod
     async def get_version(
-        db: AsyncSession,
-        script_id: int,
-        version_number: int
+        db: AsyncSession, script_id: int, version_number: int
     ) -> Optional[ScriptVersion]:
         result = await db.execute(
-            select(ScriptVersion)
-            .where(and_(
-                ScriptVersion.script_id == script_id,
-                ScriptVersion.version_number == version_number
-            ))
+            select(ScriptVersion).where(
+                and_(
+                    ScriptVersion.script_id == script_id,
+                    ScriptVersion.version_number == version_number,
+                )
+            )
         )
         return result.scalar_one_or_none()
 
     @staticmethod
     async def restore_version(
-        db: AsyncSession,
-        script_id: int,
-        version_number: int
+        db: AsyncSession, script_id: int, version_number: int
     ) -> Script:
         version = await VersionService.get_version(db, script_id, version_number)
         if not version:
             raise ValueError(f"Version {version_number} not found")
 
-        result = await db.execute(
-            select(Script).where(Script.id == script_id)
-        )
+        result = await db.execute(select(Script).where(Script.id == script_id))
         script = result.scalar_one_or_none()
         if not script:
             raise ValueError(f"Script {script_id} not found")
 
         await VersionService.create_version(
-            db, script_id,
+            db,
+            script_id,
             change_description=f"Backup before restore to v{version_number}",
-            make_current=False
+            make_current=False,
         )
 
         script.title = version.title
@@ -148,15 +140,13 @@ class VersionService:
         script.current_version = version.version_number
 
         await db.execute(
-            select(ScriptVersion)
-            .where(ScriptVersion.script_id == script_id)
+            select(ScriptVersion).where(ScriptVersion.script_id == script_id)
         )
         result = await db.execute(
-            select(ScriptVersion)
-            .where(ScriptVersion.script_id == script_id)
+            select(ScriptVersion).where(ScriptVersion.script_id == script_id)
         )
         for v in result.scalars():
-            v.is_current = (v.version_number == version_number)
+            v.is_current = v.version_number == version_number
 
         await db.commit()
         await db.refresh(script)
@@ -165,16 +155,17 @@ class VersionService:
 
     @staticmethod
     def compare_versions(
-        version1: ScriptVersion,
-        version2: ScriptVersion
+        version1: ScriptVersion, version2: ScriptVersion
     ) -> Dict[str, Any]:
-        content_diff = list(difflib.unified_diff(
-            version1.content.splitlines(keepends=True),
-            version2.content.splitlines(keepends=True),
-            fromfile=f"v{version1.version_number}",
-            tofile=f"v{version2.version_number}",
-            lineterm=''
-        ))
+        content_diff = list(
+            difflib.unified_diff(
+                version1.content.splitlines(keepends=True),
+                version2.content.splitlines(keepends=True),
+                fromfile=f"v{version1.version_number}",
+                tofile=f"v{version2.version_number}",
+                lineterm="",
+            )
+        )
 
         rating_changed = version1.predicted_rating != version2.predicted_rating
 
@@ -187,7 +178,7 @@ class VersionService:
                     score_changes[key] = {
                         "old": old_val,
                         "new": new_val,
-                        "change": new_val - old_val
+                        "change": new_val - old_val,
                     }
 
         scenes_changed = 0
@@ -199,32 +190,35 @@ class VersionService:
                 "number": version1.version_number,
                 "rating": version1.predicted_rating,
                 "scenes": version1.total_scenes,
-                "created_at": version1.created_at.isoformat() if version1.created_at else None
+                "created_at": (
+                    version1.created_at.isoformat() if version1.created_at else None
+                ),
             },
             "version2": {
                 "number": version2.version_number,
                 "rating": version2.predicted_rating,
                 "scenes": version2.total_scenes,
-                "created_at": version2.created_at.isoformat() if version2.created_at else None
+                "created_at": (
+                    version2.created_at.isoformat() if version2.created_at else None
+                ),
             },
             "changes": {
                 "rating_changed": rating_changed,
-                "rating_change": {
-                    "from": version1.predicted_rating,
-                    "to": version2.predicted_rating
-                } if rating_changed else None,
+                "rating_change": (
+                    {"from": version1.predicted_rating, "to": version2.predicted_rating}
+                    if rating_changed
+                    else None
+                ),
                 "scenes_changed": scenes_changed,
                 "score_changes": score_changes,
                 "content_diff": content_diff[:100],
-                "total_lines_changed": len(content_diff)
-            }
+                "total_lines_changed": len(content_diff),
+            },
         }
 
     @staticmethod
     async def delete_version(
-        db: AsyncSession,
-        script_id: int,
-        version_number: int
+        db: AsyncSession, script_id: int, version_number: int
     ) -> bool:
         version = await VersionService.get_version(db, script_id, version_number)
         if not version:

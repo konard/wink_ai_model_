@@ -19,7 +19,7 @@ class ModificationStrategy(ABC):
         scenes: List[Dict[str, Any]],
         params: Dict[str, Any],
         entities: Dict[str, List[Any]],
-        **kwargs
+        **kwargs,
     ) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
         """
         Apply modification to scenes.
@@ -54,7 +54,9 @@ class StrategyRegistry:
         for strategy in self._strategies:
             if strategy.can_handle(modification_type):
                 return strategy
-        raise ValueError(f"No strategy found for modification type: {modification_type}")
+        raise ValueError(
+            f"No strategy found for modification type: {modification_type}"
+        )
 
     def list_strategies(self) -> List[str]:
         """List all registered strategy names."""

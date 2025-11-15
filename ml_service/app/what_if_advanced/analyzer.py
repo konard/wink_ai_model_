@@ -71,11 +71,17 @@ class AdvancedWhatIfAnalyzer:
         if self.llm_generator:
             registry.register(LLMRewriteStrategy(self.llm_generator))
 
-        logger.info(f"Registered {len(registry.list_strategies())} modification strategies")
+        logger.info(
+            f"Registered {len(registry.list_strategies())} modification strategies"
+        )
 
-    def analyze_structured(self, request: StructuredWhatIfRequest) -> AdvancedWhatIfResponse:
+    def analyze_structured(
+        self, request: StructuredWhatIfRequest
+    ) -> AdvancedWhatIfResponse:
         """Process structured what-if request with multiple modifications."""
-        logger.info(f"Processing structured what-if with {len(request.modifications)} modifications")
+        logger.info(
+            f"Processing structured what-if with {len(request.modifications)} modifications"
+        )
 
         original_result = self._analyze_script(request.script_text)
 
@@ -104,19 +110,23 @@ class AdvancedWhatIfAnalyzer:
                     entities,
                 )
 
-                modifications_applied.append({
-                    "type": mod_config.type,
-                    "metadata": metadata,
-                })
+                modifications_applied.append(
+                    {
+                        "type": mod_config.type,
+                        "metadata": metadata,
+                    }
+                )
 
                 logger.info(f"Applied {mod_config.type}: {metadata}")
 
             except Exception as e:
                 logger.error(f"Failed to apply {mod_config.type}: {e}")
-                modifications_applied.append({
-                    "type": mod_config.type,
-                    "error": str(e),
-                })
+                modifications_applied.append(
+                    {
+                        "type": mod_config.type,
+                        "error": str(e),
+                    }
+                )
 
         if request.preserve_structure:
             modified_text = self._reconstruct_script(modified_scenes)
@@ -198,25 +208,33 @@ class AdvancedWhatIfAnalyzer:
         result = []
         for entity_type, entity_list in entities.items():
             for entity in entity_list[:10]:
-                result.append(EntityInfo(
-                    type=entity["type"],
-                    name=entity["name"],
-                    mentions=entity["mentions"],
-                    scenes=entity["scenes"],
-                ))
+                result.append(
+                    EntityInfo(
+                        type=entity["type"],
+                        name=entity["name"],
+                        mentions=entity["mentions"],
+                        scenes=entity["scenes"],
+                    )
+                )
         return result
 
     def _format_scene_info(self, scenes: List[Dict[str, Any]]) -> List[SceneInfo]:
         """Format scene information for response."""
         result = []
         for scene in scenes[:20]:
-            result.append(SceneInfo(
-                scene_id=scene.get("scene_id", 0),
-                scene_type=scene.get("scene_type", "unknown"),
-                characters=scene.get("characters", []),
-                location=scene.get("location"),
-                summary=scene["text"][:100] + "..." if len(scene["text"]) > 100 else scene["text"],
-            ))
+            result.append(
+                SceneInfo(
+                    scene_id=scene.get("scene_id", 0),
+                    scene_type=scene.get("scene_type", "unknown"),
+                    characters=scene.get("characters", []),
+                    location=scene.get("location"),
+                    summary=(
+                        scene["text"][:100] + "..."
+                        if len(scene["text"]) > 100
+                        else scene["text"]
+                    ),
+                )
+            )
         return result
 
     def _generate_explanation(
@@ -237,7 +255,9 @@ class AdvancedWhatIfAnalyzer:
                 explanation_parts.append(f"- {mod['type']}: Failed ({mod['error']})")
             else:
                 metadata = mod.get("metadata", {})
-                explanation_parts.append(f"- {mod['type']}: {self._format_metadata(metadata)}")
+                explanation_parts.append(
+                    f"- {mod['type']}: {self._format_metadata(metadata)}"
+                )
 
         if original["rating"] == modified["rating"]:
             explanation_parts.append(
@@ -245,7 +265,9 @@ class AdvancedWhatIfAnalyzer:
                 "Modifications were not significant enough to change the age rating."
             )
         else:
-            direction = "increased" if modified["rating"] > original["rating"] else "decreased"
+            direction = (
+                "increased" if modified["rating"] > original["rating"] else "decreased"
+            )
             explanation_parts.append(
                 f"\nRating {direction}: {original['rating']} → {modified['rating']}"
             )

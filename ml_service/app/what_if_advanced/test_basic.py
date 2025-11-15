@@ -2,6 +2,7 @@
 Basic tests for Advanced What-If Analyzer.
 Run with: pytest test_basic.py
 """
+
 import pytest
 from .analyzer import AdvancedWhatIfAnalyzer
 from .schemas import StructuredWhatIfRequest, ModificationConfig
@@ -40,7 +41,9 @@ def test_entity_extraction(analyzer):
     result = analyzer.analyze_structured(request)
 
     assert len(result.entities_extracted) > 0
-    character_names = [e.name for e in result.entities_extracted if e.type == "character"]
+    character_names = [
+        e.name for e in result.entities_extracted if e.type == "character"
+    ]
     assert any("JOHN" in name or "MARY" in name for name in character_names)
 
 
@@ -55,7 +58,19 @@ def test_scene_classification(analyzer):
 
     assert len(result.scene_analysis) > 0
     scene_types = [s.scene_type for s in result.scene_analysis]
-    assert all(st in ["action", "dialogue", "exposition", "emotional", "suspense", "romantic", "comedic"] for st in scene_types)
+    assert all(
+        st
+        in [
+            "action",
+            "dialogue",
+            "exposition",
+            "emotional",
+            "suspense",
+            "romantic",
+            "comedic",
+        ]
+        for st in scene_types
+    )
 
 
 def test_violence_reduction(analyzer):

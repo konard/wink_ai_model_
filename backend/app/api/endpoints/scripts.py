@@ -136,17 +136,14 @@ async def export_pdf(script_id: int, db: AsyncSession = Depends(get_db)):
         raise ScriptNotFoundError(script_id)
 
     generator = PDFReportGenerator(language="ru")
-    pdf_buffer = generator.generate_report(
-        script=script,
-        scenes=script.scenes or []
-    )
+    pdf_buffer = generator.generate_report(script=script, scenes=script.scenes or [])
 
     return StreamingResponse(
         pdf_buffer,
         media_type="application/pdf",
         headers={
             "Content-Disposition": f"attachment; filename=rating_report_{script_id}.pdf"
-        }
+        },
     )
 
 
@@ -157,8 +154,7 @@ async def export_excel(script_id: int, db: AsyncSession = Depends(get_db)):
         raise ScriptNotFoundError(script_id)
 
     excel_buffer = ExportService.export_to_excel(
-        script=script,
-        scenes=script.scenes or []
+        script=script, scenes=script.scenes or []
     )
 
     return StreamingResponse(
@@ -166,7 +162,7 @@ async def export_excel(script_id: int, db: AsyncSession = Depends(get_db)):
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={
             "Content-Disposition": f"attachment; filename=rating_report_{script_id}.xlsx"
-        }
+        },
     )
 
 
@@ -176,15 +172,12 @@ async def export_csv(script_id: int, db: AsyncSession = Depends(get_db)):
     if not script:
         raise ScriptNotFoundError(script_id)
 
-    csv_output = ExportService.export_to_csv(
-        script=script,
-        scenes=script.scenes or []
-    )
+    csv_output = ExportService.export_to_csv(script=script, scenes=script.scenes or [])
 
     return StreamingResponse(
         csv_output,
         media_type="text/csv",
         headers={
             "Content-Disposition": f"attachment; filename=rating_report_{script_id}.csv"
-        }
+        },
     )

@@ -1,4 +1,5 @@
 """Utility functions for advanced what-if analyzer."""
+
 from typing import List, Dict, Any
 import re
 
@@ -23,7 +24,7 @@ def extract_location_from_heading(heading: str) -> str:
 
 def extract_character_names(scene_text: str) -> List[str]:
     """Extract character names from scene (simple regex approach)."""
-    pattern = r'^([A-Z][A-Z\s]+?)(?:\s*\(|:)'
+    pattern = r"^([A-Z][A-Z\s]+?)(?:\s*\(|:)"
     characters = set()
 
     for line in scene_text.split("\n"):
@@ -38,7 +39,7 @@ def extract_character_names(scene_text: str) -> List[str]:
 
 def count_words(text: str) -> int:
     """Count words in text."""
-    return len(re.findall(r'\b\w+\b', text))
+    return len(re.findall(r"\b\w+\b", text))
 
 
 def merge_scenes(scenes: List[Dict[str, Any]], scene_ids: List[int]) -> Dict[str, Any]:
@@ -106,7 +107,12 @@ def get_modification_summary(modifications_applied: List[Dict[str, Any]]) -> str
             summary_parts.append(f"❌ {mod_type}: {mod['error']}")
         else:
             key_info = []
-            for key in ["removed_count", "total_replacements", "scenes_modified", "replacements"]:
+            for key in [
+                "removed_count",
+                "total_replacements",
+                "scenes_modified",
+                "replacements",
+            ]:
                 if key in metadata:
                     key_info.append(f"{key}={metadata[key]}")
 
