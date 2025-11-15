@@ -68,7 +68,7 @@ class MLServiceClient:
                         f"{self.base_url}/what_if",
                         json={
                             "script_text": script_text,
-                            "modification_request": modification_request
+                            "modification_request": modification_request,
                         },
                     )
                     response.raise_for_status()

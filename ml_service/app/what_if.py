@@ -99,8 +99,12 @@ class WhatIfAnalyzer:
                 if match:
                     if pattern_type == "remove_scenes":
                         start_scene = int(match.group(1))
-                        end_scene = int(match.group(2)) if match.group(2) else start_scene
-                        modifications["remove_scenes"].extend(range(start_scene, end_scene + 1))
+                        end_scene = (
+                            int(match.group(2)) if match.group(2) else start_scene
+                        )
+                        modifications["remove_scenes"].extend(
+                            range(start_scene, end_scene + 1)
+                        )
                     elif pattern_type == "reduce_violence":
                         modifications["reduce_violence"] = True
                         if match.lastindex and match.lastindex >= 2:
@@ -118,8 +122,12 @@ class WhatIfAnalyzer:
 
         if modifications["violence_replacement"]:
             replacement_text = modifications["violence_replacement"]
-            verbal_sim = self._get_max_similarity(replacement_text, self.context_examples["replace_violence_verbal"])
-            mild_sim = self._get_max_similarity(replacement_text, self.context_examples["replace_violence_mild"])
+            verbal_sim = self._get_max_similarity(
+                replacement_text, self.context_examples["replace_violence_verbal"]
+            )
+            mild_sim = self._get_max_similarity(
+                replacement_text, self.context_examples["replace_violence_mild"]
+            )
 
             if verbal_sim > 0.5:
                 modifications["violence_replacement_type"] = "verbal"
@@ -138,9 +146,7 @@ class WhatIfAnalyzer:
         return float(similarities.max())
 
     def apply_modifications(
-        self,
-        original_text: str,
-        modifications: Dict[str, Any]
+        self, original_text: str, modifications: Dict[str, Any]
     ) -> Tuple[str, List[str]]:
         """Apply modifications to script text and return modified text + changes description."""
         scenes = parse_script_to_scenes(original_text)
@@ -163,35 +169,26 @@ class WhatIfAnalyzer:
         modified_scenes = []
         for scene in scenes:
             scene_text = scene["text"]
-            scene_modified = False
 
             if modifications["reduce_violence"]:
-                replacement_type = modifications.get("violence_replacement_type", "mild")
-                scene_text, violence_reduced = self._reduce_violence_in_text(
+                replacement_type = modifications.get(
+                    "violence_replacement_type", "mild"
+                )
+                scene_text, _ = self._reduce_violence_in_text(
                     scene_text, replacement_type
                 )
-                if violence_reduced:
-                    scene_modified = True
 
             if modifications["reduce_profanity"]:
-                scene_text, profanity_reduced = self._reduce_profanity_in_text(scene_text)
-                if profanity_reduced:
-                    scene_modified = True
+                scene_text, _ = self._reduce_profanity_in_text(scene_text)
 
             if modifications["reduce_gore"]:
-                scene_text, gore_reduced = self._reduce_gore_in_text(scene_text)
-                if gore_reduced:
-                    scene_modified = True
+                scene_text, _ = self._reduce_gore_in_text(scene_text)
 
             if modifications["reduce_sexual"]:
-                scene_text, sexual_reduced = self._reduce_sexual_in_text(scene_text)
-                if sexual_reduced:
-                    scene_modified = True
+                scene_text, _ = self._reduce_sexual_in_text(scene_text)
 
             if modifications["reduce_drugs"]:
-                scene_text, drugs_reduced = self._reduce_drugs_in_text(scene_text)
-                if drugs_reduced:
-                    scene_modified = True
+                scene_text, _ = self._reduce_drugs_in_text(scene_text)
 
             scene["text"] = scene_text
             modified_scenes.append(scene)
@@ -210,7 +207,9 @@ class WhatIfAnalyzer:
         modified_text = "\n\n".join([s["text"] for s in modified_scenes])
         return modified_text, changes_description
 
-    def _reduce_violence_in_text(self, text: str, replacement_type: str = "mild") -> Tuple[str, bool]:
+    def _reduce_violence_in_text(
+        self, text: str, replacement_type: str = "mild"
+    ) -> Tuple[str, bool]:
         """Reduce violence in text by replacing violent words with milder alternatives."""
         modified = False
 
@@ -232,7 +231,7 @@ class WhatIfAnalyzer:
         }
 
         for violent_word, replacement in violence_replacements.items():
-            pattern = r'\b' + re.escape(violent_word) + r'\w*'
+            pattern = r"\b" + re.escape(violent_word) + r"\w*"
             if re.search(pattern, text, re.I):
                 text = re.sub(pattern, replacement, text, flags=re.I)
                 modified = True
@@ -244,20 +243,20 @@ class WhatIfAnalyzer:
         modified = False
 
         profanity_patterns = [
-            (r'\bfuck\w*\b', 'darn', re.I),
-            (r'\bshit\b', 'crap', re.I),
-            (r'\bmotherfucker\b', 'jerk', re.I),
-            (r'\bbitch\b', 'witch', re.I),
-            (r'\basshole\b', 'idiot', re.I),
-            (r'\bблядь\b', 'черт', re.I),
-            (r'\bбля\b', 'блин', re.I),
-            (r'\bсука\b', 'зараза', re.I),
-            (r'\bхуй\w*\b', 'черт', re.I),
-            (r'\bпизд\w*\b', 'черт', re.I),
-            (r'\bебать\b', 'черт', re.I),
-            (r'\bебал\w*\b', 'черт', re.I),
-            (r'\bдерьм\w*\b', 'ерунда', re.I),
-            (r'\bговн\w*\b', 'ерунда', re.I),
+            (r"\bfuck\w*\b", "darn", re.I),
+            (r"\bshit\b", "crap", re.I),
+            (r"\bmotherfucker\b", "jerk", re.I),
+            (r"\bbitch\b", "witch", re.I),
+            (r"\basshole\b", "idiot", re.I),
+            (r"\bблядь\b", "черт", re.I),
+            (r"\bбля\b", "блин", re.I),
+            (r"\bсука\b", "зараза", re.I),
+            (r"\bхуй\w*\b", "черт", re.I),
+            (r"\bпизд\w*\b", "черт", re.I),
+            (r"\bебать\b", "черт", re.I),
+            (r"\bебал\w*\b", "черт", re.I),
+            (r"\bдерьм\w*\b", "ерунда", re.I),
+            (r"\bговн\w*\b", "ерунда", re.I),
         ]
 
         for pattern, replacement, flags in profanity_patterns:
@@ -285,7 +284,7 @@ class WhatIfAnalyzer:
         }
 
         for gore_word, replacement in gore_replacements.items():
-            pattern = r'\b' + re.escape(gore_word) + r'\w*'
+            pattern = r"\b" + re.escape(gore_word) + r"\w*"
             if re.search(pattern, text, re.I):
                 text = re.sub(pattern, replacement, text, flags=re.I)
                 modified = True
@@ -297,14 +296,14 @@ class WhatIfAnalyzer:
         modified = False
 
         sexual_patterns = [
-            (r'\brape\b', 'assault', re.I),
-            (r'\bsex scene\b', 'romantic scene', re.I),
-            (r'\bnaked\b', 'undressed', re.I),
-            (r'\bnude\b', 'unclothed', re.I),
-            (r'\bизнасилов\w*\b', 'напад', re.I),
-            (r'\bсексуальн\w*\b', 'романтическ', re.I),
-            (r'\bголый\b', 'раздетый', re.I),
-            (r'\bголая\b', 'раздетая', re.I),
+            (r"\brape\b", "assault", re.I),
+            (r"\bsex scene\b", "romantic scene", re.I),
+            (r"\bnaked\b", "undressed", re.I),
+            (r"\bnude\b", "unclothed", re.I),
+            (r"\bизнасилов\w*\b", "напад", re.I),
+            (r"\bсексуальн\w*\b", "романтическ", re.I),
+            (r"\bголый\b", "раздетый", re.I),
+            (r"\bголая\b", "раздетая", re.I),
         ]
 
         for pattern, replacement, flags in sexual_patterns:
@@ -319,12 +318,12 @@ class WhatIfAnalyzer:
         modified = False
 
         drug_patterns = [
-            (r'\bheroin\b', 'substance', re.I),
-            (r'\bcocaine\b', 'substance', re.I),
-            (r'\bmarijuana\b', 'substance', re.I),
-            (r'\bгероин\b', 'вещество', re.I),
-            (r'\bкокаин\b', 'вещество', re.I),
-            (r'\bмарихуан\w*\b', 'вещество', re.I),
+            (r"\bheroin\b", "substance", re.I),
+            (r"\bcocaine\b", "substance", re.I),
+            (r"\bmarijuana\b", "substance", re.I),
+            (r"\bгероин\b", "вещество", re.I),
+            (r"\bкокаин\b", "вещество", re.I),
+            (r"\bмарихуан\w*\b", "вещество", re.I),
         ]
 
         for pattern, replacement, flags in drug_patterns:
@@ -334,11 +333,7 @@ class WhatIfAnalyzer:
 
         return text, modified
 
-    def simulate_what_if(
-        self,
-        original_text: str,
-        user_request: str
-    ) -> Dict[str, Any]:
+    def simulate_what_if(self, original_text: str, user_request: str) -> Dict[str, Any]:
         """Simulate what-if scenario and return rating comparison."""
         logger.info(f"Processing what-if request: {user_request}")
 
@@ -350,10 +345,7 @@ class WhatIfAnalyzer:
         modified_result = self._analyze_script(modified_text)
 
         explanation = self._generate_explanation(
-            original_result,
-            modified_result,
-            changes,
-            modifications
+            original_result, modified_result, changes, modifications
         )
 
         return {
@@ -377,7 +369,15 @@ class WhatIfAnalyzer:
 
         scores = [normalize_and_contextualize_scores(f) for f in features]
 
-        score_keys = ["violence", "gore", "sex_act", "nudity", "profanity", "drugs", "child_risk"]
+        score_keys = [
+            "violence",
+            "gore",
+            "sex_act",
+            "nudity",
+            "profanity",
+            "drugs",
+            "child_risk",
+        ]
         agg = {}
 
         for k in score_keys:
@@ -394,8 +394,12 @@ class WhatIfAnalyzer:
                 agg[k] = float(np.percentile(values, 90))
 
         all_excerpts = {
-            "violence": [], "gore": [], "sex": [],
-            "nudity": [], "profanity": [], "drugs": []
+            "violence": [],
+            "gore": [],
+            "sex": [],
+            "nudity": [],
+            "profanity": [],
+            "drugs": [],
         }
         for s in scores:
             for key in all_excerpts.keys():
@@ -417,7 +421,7 @@ class WhatIfAnalyzer:
         original: Dict[str, Any],
         modified: Dict[str, Any],
         changes: List[str],
-        modifications: Dict[str, Any]
+        modifications: Dict[str, Any],
     ) -> str:
         """Generate human-readable explanation of rating change."""
         if original["rating"] == modified["rating"]:
@@ -435,14 +439,14 @@ class WhatIfAnalyzer:
 
                 if abs(diff) > 0.05:
                     direction = "увеличился" if diff > 0 else "снизился"
-                    score_changes.append(
-                        f"{key}: {direction} на {abs(diff):.2f}"
-                    )
+                    score_changes.append(f"{key}: {direction} на {abs(diff):.2f}")
 
             if score_changes:
                 explanation += f" Изменения в оценках: {', '.join(score_changes)}."
         else:
-            direction = "повысился" if modified["rating"] > original["rating"] else "понизился"
+            direction = (
+                "повысился" if modified["rating"] > original["rating"] else "понизился"
+            )
             explanation = (
                 f"Рейтинг {direction}: было {original['rating']}, стало {modified['rating']}. "
                 f"Изменения: {', '.join(changes)}. "

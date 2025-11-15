@@ -112,9 +112,7 @@ async def get_rating_job_status(job_id: str):
 
 @router.post("/{script_id}/what-if", response_model=WhatIfResponse)
 async def what_if_analysis(
-    script_id: int,
-    request: WhatIfRequest,
-    db: AsyncSession = Depends(get_db)
+    script_id: int, request: WhatIfRequest, db: AsyncSession = Depends(get_db)
 ):
     script = await script_service.get_script(db, script_id)
     if not script:
@@ -122,7 +120,7 @@ async def what_if_analysis(
 
     result = await ml_client.what_if_analysis(
         script_text=str(script.content),
-        modification_request=request.modification_request
+        modification_request=request.modification_request,
     )
 
     return WhatIfResponse(**result)

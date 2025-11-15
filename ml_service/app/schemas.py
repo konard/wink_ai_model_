@@ -49,7 +49,7 @@ class WhatIfRequest(BaseModel):
     modification_request: str = Field(
         ...,
         min_length=3,
-        description="What-if modification request (e.g., 'remove scene 12-13', 'replace fight with verbal conflict')"
+        description="What-if modification request (e.g., 'remove scene 12-13', 'replace fight with verbal conflict')",
     )
 
 

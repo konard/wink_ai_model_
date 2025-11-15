@@ -2,7 +2,13 @@ from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
-from .schemas import ScriptRequest, ScriptRatingResponse, HealthResponse, WhatIfRequest, WhatIfResponse
+from .schemas import (
+    ScriptRequest,
+    ScriptRatingResponse,
+    HealthResponse,
+    WhatIfRequest,
+    WhatIfResponse,
+)
 from .pipeline import get_pipeline
 from .what_if import get_what_if_analyzer
 from .config import settings
@@ -66,8 +72,7 @@ async def what_if_simulation(request: WhatIfRequest):
     try:
         analyzer = get_what_if_analyzer()
         result = analyzer.simulate_what_if(
-            request.script_text,
-            request.modification_request
+            request.script_text, request.modification_request
         )
         return WhatIfResponse(**result)
     except Exception as e:

@@ -63,9 +63,7 @@ class RatingResultResponse(BaseModel):
 class WhatIfRequest(BaseModel):
     script_id: int
     modification_request: str = Field(
-        ...,
-        min_length=3,
-        description="What-if modification request"
+        ..., min_length=3, description="What-if modification request"
     )
 
 
