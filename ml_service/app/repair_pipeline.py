@@ -377,6 +377,12 @@ for context_type, templates in CONTEXT_TEMPLATES.items():
 print("Модель готова к использованию.\n")
 
 
+def count_matches(patterns: List, text: str) -> int:
+    """Count pattern matches in text (wrapper for tests)."""
+    count, _ = count_pattern_matches(patterns, text)
+    return count
+
+
 def count_pattern_matches(patterns: List[str], text: str) -> Tuple[int, List[str]]:
     """
     Подсчитывает совпадения паттернов и возвращает найденные фрагменты.
@@ -622,6 +628,53 @@ def normalize_and_contextualize_scores(features: Dict[str, Any]) -> Dict[str, An
             "profanity": features["profanity_excerpts"],
             "drugs": features["drugs_excerpts"],
         },
+    }
+
+
+def scene_feature_vector(text: str) -> Dict[str, Any]:
+    """Extract raw feature counts from scene text (wrapper for tests)."""
+    features = extract_scene_features(text)
+    return {
+        "violence": features["violence_count"],
+        "gore": features["gore_count"],
+        "sex_act": features["sex_count"],
+        "nudity": features["nudity_count"],
+        "profanity": features["profanity_count"],
+        "drugs": features["drugs_count"],
+        "child_mentions": features["child_count"],
+        "length": features["length"],
+    }
+
+
+def normalize_scene_scores(features: Dict[str, Any]) -> Dict[str, float]:
+    """Normalize raw feature counts to 0-1 scores (wrapper for tests)."""
+    internal_features = {
+        "violence_count": features.get("violence", 0),
+        "gore_count": features.get("gore", 0),
+        "sex_count": features.get("sex_act", 0),
+        "nudity_count": features.get("nudity", 0),
+        "profanity_count": features.get("profanity", 0),
+        "drugs_count": features.get("drugs", 0),
+        "child_count": features.get("child_mentions", 0),
+        "length": features.get("length", 1),
+        "violence_excerpts": [],
+        "gore_excerpts": [],
+        "sex_excerpts": [],
+        "nudity_excerpts": [],
+        "profanity_excerpts": [],
+        "drugs_excerpts": [],
+        "child_excerpts": [],
+        "context_scores": {k: 0.0 for k in CONTEXT_TEMPLATES.keys()},
+    }
+
+    normalized = normalize_and_contextualize_scores(internal_features)
+    return {
+        "violence": normalized["violence"],
+        "gore": normalized["gore"],
+        "sex_act": normalized["sex_act"],
+        "nudity": normalized["nudity"],
+        "profanity": normalized["profanity"],
+        "drugs": normalized["drugs"],
     }
 
 
