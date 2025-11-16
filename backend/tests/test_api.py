@@ -1,13 +1,20 @@
 import pytest
 from httpx import AsyncClient
+from unittest.mock import AsyncMock, patch
 
 
 @pytest.mark.asyncio
 async def test_health_endpoint(client: AsyncClient):
-    response = await client.get("/health")
-    assert response.status_code == 200
-    data = response.json()
-    assert data["status"] == "healthy"
+    with patch("app.main.redis.Redis") as mock_redis:
+        mock_instance = AsyncMock()
+        mock_instance.ping = AsyncMock()
+        mock_instance.close = AsyncMock()
+        mock_redis.return_value = mock_instance
+
+        response = await client.get("/health")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "healthy"
 
 
 @pytest.mark.asyncio

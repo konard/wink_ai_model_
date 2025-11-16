@@ -61,10 +61,7 @@ class ScriptService:
         db: AsyncSession, skip: int = 0, limit: int = 100
     ) -> list[Script]:
         result = await db.execute(
-            select(Script)
-            .offset(skip)
-            .limit(limit)
-            .order_by(Script.created_at.desc())
+            select(Script).offset(skip).limit(limit).order_by(Script.created_at.desc())
         )
         return list(result.scalars().all())
 
