@@ -21,8 +21,25 @@ from reportlab.platypus import (
     KeepTogether,
 )
 from reportlab.lib.enums import TA_CENTER
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+import os
 
 from ..models.script import Script, Scene
+
+try:
+    font_path = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
+    if os.path.exists(font_path):
+        pdfmetrics.registerFont(TTFont('DejaVuSans', font_path))
+        pdfmetrics.registerFont(TTFont('DejaVuSans-Bold', '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'))
+        DEFAULT_FONT = 'DejaVuSans'
+        DEFAULT_FONT_BOLD = 'DejaVuSans-Bold'
+    else:
+        DEFAULT_FONT = 'Helvetica'
+        DEFAULT_FONT_BOLD = 'Helvetica-Bold'
+except:
+    DEFAULT_FONT = 'Helvetica'
+    DEFAULT_FONT_BOLD = 'Helvetica-Bold'
 
 
 class PDFReportGenerator:
@@ -54,6 +71,7 @@ class PDFReportGenerator:
             ParagraphStyle(
                 name="CustomTitle",
                 parent=self.styles["Title"],
+                fontName=DEFAULT_FONT_BOLD,
                 fontSize=24,
                 textColor=colors.HexColor("#1e40af"),
                 spaceAfter=30,
@@ -65,6 +83,7 @@ class PDFReportGenerator:
             ParagraphStyle(
                 name="SectionHeader",
                 parent=self.styles["Heading1"],
+                fontName=DEFAULT_FONT_BOLD,
                 fontSize=16,
                 textColor=colors.HexColor("#1e40af"),
                 spaceAfter=12,
@@ -76,11 +95,14 @@ class PDFReportGenerator:
             ParagraphStyle(
                 name="SubSection",
                 parent=self.styles["Heading2"],
+                fontName=DEFAULT_FONT_BOLD,
                 fontSize=14,
                 textColor=colors.HexColor("#4b5563"),
                 spaceAfter=10,
             )
         )
+
+        self.styles['Normal'].fontName = DEFAULT_FONT
 
     def generate_report(
         self,
@@ -163,10 +185,10 @@ class PDFReportGenerator:
         table.setStyle(
             TableStyle(
                 [
-                    ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                    ("FONTNAME", (0, 0), (-1, -1), DEFAULT_FONT),
                     ("FONTSIZE", (0, 0), (-1, -1), 11),
                     ("TEXTCOLOR", (0, 0), (0, -1), colors.HexColor("#4b5563")),
-                    ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
+                    ("FONTNAME", (0, 0), (0, -1), DEFAULT_FONT_BOLD),
                     ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
                     ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
                 ]
@@ -307,10 +329,10 @@ class PDFReportGenerator:
                 issues_table.setStyle(
                     TableStyle(
                         [
-                            ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                            ("FONTNAME", (0, 0), (-1, -1), DEFAULT_FONT),
                             ("FONTSIZE", (0, 0), (-1, -1), 10),
                             ("TEXTCOLOR", (0, 0), (0, -1), colors.HexColor("#991b1b")),
-                            ("FONTNAME", (1, 0), (1, -1), "Helvetica-Bold"),
+                            ("FONTNAME", (1, 0), (1, -1), DEFAULT_FONT_BOLD),
                             ("ALIGN", (1, 0), (1, -1), "RIGHT"),
                             ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
                         ]
@@ -361,7 +383,8 @@ class PDFReportGenerator:
         gaps_table.setStyle(
             TableStyle(
                 [
-                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTNAME", (0, 0), (-1, 0), DEFAULT_FONT_BOLD),
+                    ("FONTNAME", (0, 1), (-1, -1), DEFAULT_FONT),
                     ("FONTSIZE", (0, 0), (-1, -1), 10),
                     ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#e0e7ff")),
                     ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#1e40af")),

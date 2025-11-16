@@ -174,9 +174,12 @@ class ExportService:
         ws.column_dimensions["F"].width = 50
 
     @staticmethod
-    def export_to_csv(script: Script, scenes: List[Scene]) -> StringIO:
-        output = StringIO()
-        writer = csv.writer(output)
+    def export_to_csv(script: Script, scenes: List[Scene]) -> BytesIO:
+        output = BytesIO()
+        output.write('\ufeff'.encode('utf-8'))
+
+        text_wrapper = StringIO()
+        writer = csv.writer(text_wrapper)
 
         writer.writerow(["Отчет по возрастному рейтингу"])
         writer.writerow([])
@@ -233,5 +236,6 @@ class ExportService:
                 ]
             )
 
+        output.write(text_wrapper.getvalue().encode('utf-8'))
         output.seek(0)
         return output

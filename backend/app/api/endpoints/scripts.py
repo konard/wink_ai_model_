@@ -176,7 +176,7 @@ async def export_csv(script_id: int, db: AsyncSession = Depends(get_db)):
 
     return StreamingResponse(
         csv_output,
-        media_type="text/csv",
+        media_type="text/csv; charset=utf-8",
         headers={
             "Content-Disposition": f"attachment; filename=rating_report_{script_id}.csv"
         },
