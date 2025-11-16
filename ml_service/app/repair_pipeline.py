@@ -592,7 +592,7 @@ def _analyze_scene_structure(scene_text: str) -> Dict[str, float]:
     Analyzes scene structure to distinguish ACTION from DIALOGUE.
     Returns weights for content scoring.
     """
-    lines = scene_text.split('\n')
+    lines = scene_text.split("\n")
 
     dialogue_lines = 0
     action_lines = 0
@@ -607,20 +607,20 @@ def _analyze_scene_structure(scene_text: str) -> Dict[str, float]:
             i += 1
             continue
 
-        if re.match(r'^[А-ЯA-Z\s]{2,}$', line) and len(line) < 50:
+        if re.match(r"^[А-ЯA-Z\s]{2,}$", line) and len(line) < 50:
             i += 1
             if i < len(lines):
                 next_line = lines[i].strip()
-                if next_line and not next_line.startswith('('):
+                if next_line and not next_line.startswith("("):
                     dialogue_lines += 1
                     dialogue_words += len(next_line.split())
             continue
 
-        if line.startswith('(') and line.endswith(')'):
+        if line.startswith("(") and line.endswith(")"):
             i += 1
             continue
 
-        if not re.match(r'^(INT\.|EXT\.|ИНТ\.|ЭКСТ\.)', line, re.I):
+        if not re.match(r"^(INT\.|EXT\.|ИНТ\.|ЭКСТ\.)", line, re.I):
             words = len(line.split())
             total_words += words
             if words < 80:
@@ -642,13 +642,12 @@ def _analyze_scene_structure(scene_text: str) -> Dict[str, float]:
     else:
         action_weight = 1.0
 
-    return {
-        "dialogue_ratio": dialogue_ratio,
-        "action_weight": action_weight
-    }
+    return {"dialogue_ratio": dialogue_ratio, "action_weight": action_weight}
 
 
-def _normalize_count_to_score(count: float, scene_length: int, is_critical: bool = False) -> float:
+def _normalize_count_to_score(
+    count: float, scene_length: int, is_critical: bool = False
+) -> float:
     """Threshold-based normalization with weighted count support."""
     if count < 0.01:
         return 0.0
@@ -682,7 +681,9 @@ def normalize_and_contextualize_scores(features: Dict[str, Any]) -> Dict[str, An
     ctx = features["context_scores"]
     structure = features.get("structure", {"dialogue_ratio": 0.5, "action_weight": 1.0})
 
-    violence_raw = _normalize_count_to_score(features["violence_count"], L, is_critical=False)
+    violence_raw = _normalize_count_to_score(
+        features["violence_count"], L, is_critical=False
+    )
     gore_raw = _normalize_count_to_score(features["gore_count"], L, is_critical=True)
 
     violence_multiplier = structure["action_weight"]
@@ -721,9 +722,13 @@ def normalize_and_contextualize_scores(features: Dict[str, Any]) -> Dict[str, An
     else:
         sex_score = sex_raw
 
-    nudity_score = _normalize_count_to_score(features["nudity_count"], L, is_critical=False)
+    nudity_score = _normalize_count_to_score(
+        features["nudity_count"], L, is_critical=False
+    )
 
-    profanity_score = _normalize_count_to_score(features["profanity_count"], L, is_critical=False)
+    profanity_score = _normalize_count_to_score(
+        features["profanity_count"], L, is_critical=False
+    )
 
     drugs_raw = _normalize_count_to_score(features["drugs_count"], L, is_critical=False)
     if ctx["drug_abuse"] > 0.55:
