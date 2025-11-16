@@ -176,7 +176,7 @@ class ExportService:
     @staticmethod
     def export_to_csv(script: Script, scenes: List[Scene]) -> BytesIO:
         output = BytesIO()
-        output.write('\ufeff'.encode('utf-8'))
+        output.write("\ufeff".encode("utf-8"))
 
         text_wrapper = StringIO()
         writer = csv.writer(text_wrapper)
@@ -236,6 +236,6 @@ class ExportService:
                 ]
             )
 
-        output.write(text_wrapper.getvalue().encode('utf-8'))
+        output.write(text_wrapper.getvalue().encode("utf-8"))
         output.seek(0)
         return output

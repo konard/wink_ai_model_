@@ -28,18 +28,23 @@ import os
 from ..models.script import Script, Scene
 
 try:
-    font_path = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
+    font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
     if os.path.exists(font_path):
-        pdfmetrics.registerFont(TTFont('DejaVuSans', font_path))
-        pdfmetrics.registerFont(TTFont('DejaVuSans-Bold', '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'))
-        DEFAULT_FONT = 'DejaVuSans'
-        DEFAULT_FONT_BOLD = 'DejaVuSans-Bold'
+        pdfmetrics.registerFont(TTFont("DejaVuSans", font_path))
+        pdfmetrics.registerFont(
+            TTFont(
+                "DejaVuSans-Bold",
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+            )
+        )
+        DEFAULT_FONT = "DejaVuSans"
+        DEFAULT_FONT_BOLD = "DejaVuSans-Bold"
     else:
-        DEFAULT_FONT = 'Helvetica'
-        DEFAULT_FONT_BOLD = 'Helvetica-Bold'
-except:
-    DEFAULT_FONT = 'Helvetica'
-    DEFAULT_FONT_BOLD = 'Helvetica-Bold'
+        DEFAULT_FONT = "Helvetica"
+        DEFAULT_FONT_BOLD = "Helvetica-Bold"
+except Exception:
+    DEFAULT_FONT = "Helvetica"
+    DEFAULT_FONT_BOLD = "Helvetica-Bold"
 
 
 class PDFReportGenerator:
@@ -102,7 +107,7 @@ class PDFReportGenerator:
             )
         )
 
-        self.styles['Normal'].fontName = DEFAULT_FONT
+        self.styles["Normal"].fontName = DEFAULT_FONT
 
     def generate_report(
         self,

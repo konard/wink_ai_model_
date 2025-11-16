@@ -12,7 +12,9 @@ from .ml_client import ml_client
 
 class ScriptService:
     @staticmethod
-    async def create_script(db: AsyncSession, script_data: ScriptCreate, create_version: bool = True) -> Script:
+    async def create_script(
+        db: AsyncSession, script_data: ScriptCreate, create_version: bool = True
+    ) -> Script:
         result = await db.execute(
             select(Script).where(Script.title == script_data.title)
         )
@@ -59,7 +61,10 @@ class ScriptService:
         db: AsyncSession, skip: int = 0, limit: int = 100
     ) -> list[Script]:
         result = await db.execute(
-            select(Script).offset(skip).limit(limit).order_by(Script.created_at.desc())
+            select(Script)
+            .offset(skip)
+            .limit(limit)
+            .order_by(Script.created_at.desc())
         )
         return list(result.scalars().all())
 
