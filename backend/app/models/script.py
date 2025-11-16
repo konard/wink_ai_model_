@@ -26,8 +26,12 @@ class Script(Base):  # type: ignore[misc, valid-type]
     model_version: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     total_scenes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     current_version: Mapped[int] = mapped_column(Integer, default=1)
-    created_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), onupdate=func.now())
+    created_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), onupdate=func.now()
+    )
 
     scenes = relationship(
         "Scene", back_populates="script", cascade="all, delete-orphan"
@@ -73,7 +77,9 @@ class RatingLog(Base):  # type: ignore[misc, valid-type]
     predicted_rating: Mapped[str] = mapped_column(String(10), nullable=False)
     reasons: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     model_version: Mapped[str] = mapped_column(String(50), nullable=False)
-    created_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
 
     script = relationship("Script", back_populates="ratings")
 
@@ -93,7 +99,9 @@ class ScriptVersion(Base):  # type: ignore[misc, valid-type]
     total_scenes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     change_description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     is_current: Mapped[bool] = mapped_column(Boolean, default=False)
-    created_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
 
     scenes_data: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     version_metadata: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
