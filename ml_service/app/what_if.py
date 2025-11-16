@@ -499,9 +499,12 @@ class WhatIfAnalyzer:
 
         return explanation
 
-
     def generate_smart_suggestions(
-        self, script_text: str, current_scores: Dict[str, float] | None = None, language: str = "ru", max_suggestions: int = 8
+        self,
+        script_text: str,
+        current_scores: Dict[str, float] | None = None,
+        language: str = "ru",
+        max_suggestions: int = 8,
     ) -> Dict[str, Any]:
         """Generate smart, personalized suggestions based on script analysis."""
         logger.info("Generating smart suggestions for script")
@@ -525,10 +528,25 @@ class WhatIfAnalyzer:
 
         # Define thresholds and icons
         category_config = {
-            "violence": {"threshold": 0.3, "icon": "💬", "ru": "насилие", "en": "violence"},
+            "violence": {
+                "threshold": 0.3,
+                "icon": "💬",
+                "ru": "насилие",
+                "en": "violence",
+            },
             "gore": {"threshold": 0.25, "icon": "🩹", "ru": "кровь", "en": "gore"},
-            "profanity": {"threshold": 0.3, "icon": "🤐", "ru": "мат", "en": "profanity"},
-            "sex_act": {"threshold": 0.2, "icon": "🔞", "ru": "секс", "en": "sexual content"},
+            "profanity": {
+                "threshold": 0.3,
+                "icon": "🤐",
+                "ru": "мат",
+                "en": "profanity",
+            },
+            "sex_act": {
+                "threshold": 0.2,
+                "icon": "🔞",
+                "ru": "секс",
+                "en": "sexual content",
+            },
             "nudity": {"threshold": 0.2, "icon": "👗", "ru": "нагота", "en": "nudity"},
             "drugs": {"threshold": 0.2, "icon": "💊", "ru": "наркотики", "en": "drugs"},
         }
@@ -555,10 +573,14 @@ class WhatIfAnalyzer:
                     category_name = config["ru"]
                     if len(affected_scenes) > 0:
                         if len(affected_scenes) == 1:
-                            suggestion_text = f"убрать {category_name} в сцене {affected_scenes[0]}"
+                            suggestion_text = (
+                                f"убрать {category_name} в сцене {affected_scenes[0]}"
+                            )
                         elif len(affected_scenes) <= 3:
                             scenes_str = ", ".join(map(str, affected_scenes[:3]))
-                            suggestion_text = f"убрать {category_name} в сценах {scenes_str}"
+                            suggestion_text = (
+                                f"убрать {category_name} в сценах {scenes_str}"
+                            )
                         else:
                             suggestion_text = f"смягчить {category_name} ({len(affected_scenes)} сцен)"
                     else:
@@ -569,10 +591,14 @@ class WhatIfAnalyzer:
                     category_name = config["en"]
                     if len(affected_scenes) > 0:
                         if len(affected_scenes) == 1:
-                            suggestion_text = f"remove {category_name} in scene {affected_scenes[0]}"
+                            suggestion_text = (
+                                f"remove {category_name} in scene {affected_scenes[0]}"
+                            )
                         elif len(affected_scenes) <= 3:
                             scenes_str = ", ".join(map(str, affected_scenes[:3]))
-                            suggestion_text = f"remove {category_name} in scenes {scenes_str}"
+                            suggestion_text = (
+                                f"remove {category_name} in scenes {scenes_str}"
+                            )
                         else:
                             suggestion_text = f"reduce {category_name} ({len(affected_scenes)} scenes)"
                     else:
@@ -580,15 +606,17 @@ class WhatIfAnalyzer:
 
                     reasoning = f"{category_name.capitalize()} level: {int(score * 100)}% - above threshold for lower rating"
 
-                suggestions.append({
-                    "text": suggestion_text,
-                    "category": category,
-                    "icon": config["icon"],
-                    "priority": priority,
-                    "confidence": confidence,
-                    "affected_scenes": affected_scenes[:5],  # Limit to 5 scenes
-                    "reasoning": reasoning,
-                })
+                suggestions.append(
+                    {
+                        "text": suggestion_text,
+                        "category": category,
+                        "icon": config["icon"],
+                        "priority": priority,
+                        "confidence": confidence,
+                        "affected_scenes": affected_scenes[:5],  # Limit to 5 scenes
+                        "reasoning": reasoning,
+                    }
+                )
 
         # Sort by priority (descending)
         suggestions.sort(key=lambda x: (-x["priority"], -x["confidence"]))

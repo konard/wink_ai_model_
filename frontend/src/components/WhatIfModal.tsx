@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { scriptsApi, AdvancedWhatIfResponse, ModificationConfig, SmartSuggestion } from '../api/client'
 import { X, Sparkles, TrendingUp, TrendingDown, Minus, Lightbulb, Loader2, Wand2, Brain } from 'lucide-react'
@@ -68,7 +68,7 @@ export default function WhatIfModal({ scriptText, currentRating, currentScores, 
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   })
 
-  const aiSuggestions = smartSuggestionsData?.suggestions || []
+  const aiSuggestions = useMemo(() => smartSuggestionsData?.suggestions || [], [smartSuggestionsData])
 
   useEffect(() => {
     setShowSuggestions(query.length > 0 && query.length < 50 && aiSuggestions.length > 0)
